@@ -1,21 +1,28 @@
 
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Calendar, Users, GitBranch } from 'lucide-react';
+import { Calendar, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Project {
   id: number | string;
   name: string;
-  category: string;
-  status: 'on-track' | 'at-risk' | 'delayed';
+  category: string | string[];
+  status: 'upcoming' | 'completed';
   progress: number;
   nextMilestone: string;
   dueDate: string;
   team: string[];
   dependencies: string[];
+  type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
+  sale_date?: string;
+  launch_date?: string;
+  size_fdv?: string;
+  expected_fdv?: string;
+  backers?: string[];
 }
 
 interface ProjectCardProps {
@@ -25,24 +32,30 @@ interface ProjectCardProps {
 export const ProjectCard = ({ project }: ProjectCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'on-track':
+      case 'upcoming':
         return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
-      case 'at-risk':
-        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
-      case 'delayed':
-        return 'bg-[#ff7966]/20 text-black border-[#ff7966]/40';
+      case 'completed':
+        return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
       default:
         return 'bg-black/5 text-black border-black/20';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'sale':
+        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
+      case 'listing':
+        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
+      default:
+        return 'bg-black/5 text-black border-black/20';
+    }
   };
+
+  const launchDate = project.sale_date || project.launch_date || project.dueDate;
+  const fdvAmount = project.size_fdv || project.expected_fdv;
+  const categories = Array.isArray(project.category) ? project.category : [project.category];
+  const backers = project.backers || project.team;
 
   return (
     <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer">
@@ -51,59 +64,68 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <h3 className="font-semibold text-lg text-black hover:text-[#00ec97] transition-colors">{project.name}</h3>
-              <Badge variant="outline" className="text-xs font-medium border-black/20 text-black">
-                {project.category}
-              </Badge>
+              {project.symbol && (
+                <p className="text-sm text-black/60 font-medium">${project.symbol}</p>
+              )}
             </div>
-            <Badge className={`font-medium ${getStatusColor(project.status)}`}>
-              {project.status.replace('-', ' ')}
-            </Badge>
+            <div className="flex flex-col gap-2">
+              <Badge className={`font-medium ${getStatusColor(project.status)}`}>
+                {project.status}
+              </Badge>
+              {project.type && (
+                <Badge className={`font-medium ${getTypeColor(project.type)}`}>
+                  {project.type}
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
         
         <CardContent className="space-y-5">
-          {/* Progress */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-black">Progress</span>
-              <span className="text-sm text-black/70 font-medium">{project.progress}%</span>
-            </div>
-            <Progress value={project.progress} className="h-2" />
+          {/* Description */}
+          {project.description && (
+            <p className="text-sm text-black/70 font-medium line-clamp-2">{project.description}</p>
+          )}
+
+          {/* Categories */}
+          <div className="flex flex-wrap gap-1">
+            {categories.slice(0, 3).map((cat: string) => (
+              <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                {cat}
+              </Badge>
+            ))}
+            {categories.length > 3 && (
+              <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                +{categories.length - 3}
+              </Badge>
+            )}
           </div>
 
-          {/* Next Milestone */}
+          {/* Launch Date */}
           <div className="flex items-center space-x-3 text-sm">
             <Calendar className="h-4 w-4 text-black/60" />
-            <span className="font-semibold text-black">Next:</span>
-            <span className="text-black/80">{project.nextMilestone}</span>
-            <Badge variant="outline" className="text-xs font-medium border-[#17d9d4]/30 text-black bg-[#17d9d4]/5">
-              {formatDate(project.dueDate)}
-            </Badge>
+            <span className="font-semibold text-black">Launch:</span>
+            <span className="text-black/80 font-medium">{launchDate}</span>
           </div>
 
-          {/* Team */}
-          <div className="flex items-center space-x-3 text-sm">
-            <Users className="h-4 w-4 text-black/60" />
-            <span className="font-semibold text-black">Team:</span>
-            <span className="text-black/70 font-medium">
-              {project.team.join(', ')}
-            </span>
-          </div>
+          {/* FDV */}
+          {fdvAmount && (
+            <div className="flex items-center space-x-3 text-sm">
+              <DollarSign className="h-4 w-4 text-black/60" />
+              <span className="font-semibold text-black">FDV:</span>
+              <span className="text-black/80 font-medium">{fdvAmount}</span>
+            </div>
+          )}
 
-          {/* Dependencies */}
-          {project.dependencies.length > 0 && (
-            <div className="flex items-start space-x-3 text-sm">
-              <GitBranch className="h-4 w-4 text-black/60 mt-0.5" />
-              <div>
-                <span className="font-semibold text-black">Dependencies:</span>
-                <div className="mt-2 space-x-2">
-                  {project.dependencies.map((dep, index) => (
-                    <Badge key={index} variant="outline" className="text-xs font-medium border-[#9797ff]/30 text-black bg-[#9797ff]/5">
-                      {dep}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+          {/* Backers */}
+          {backers.length > 0 && (
+            <div className="flex items-center space-x-3 text-sm">
+              <Users className="h-4 w-4 text-black/60" />
+              <span className="font-semibold text-black">Backers:</span>
+              <span className="text-black/70 font-medium">
+                {backers.slice(0, 2).join(', ')}
+                {backers.length > 2 && ` +${backers.length - 2} more`}
+              </span>
             </div>
           )}
         </CardContent>
