@@ -236,16 +236,24 @@ export default function Index() {
               <Link 
                 key={`${project.id}-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center justify-center space-x-2 h-8"
               >
-                {project.logo && (
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
-                    <AvatarFallback className="text-[10px] bg-black/10 text-black/60">
-                      {project.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                  {project.logo ? (
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                      <AvatarFallback className="text-[10px] bg-black/10 text-black/60 flex items-center justify-center">
+                        {project.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
+                      <span className="text-[10px] text-black/60 font-medium">
+                        {project.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
                 <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
@@ -255,16 +263,24 @@ export default function Index() {
               <Link 
                 key={`${project.id}-duplicate-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center justify-center space-x-2 h-8"
               >
-                {project.logo && (
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
-                    <AvatarFallback className="text-[10px] bg-black/10 text-black/60">
-                      {project.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                  {project.logo ? (
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                      <AvatarFallback className="text-[10px] bg-black/10 text-black/60 flex items-center justify-center">
+                        {project.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
+                      <span className="text-[10px] text-black/60 font-medium">
+                        {project.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
                 <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
