@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,24 +150,22 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
               <Calendar className="h-5 w-5" />
               Launch Calendar
             </div>
-            <div className="text-sm font-normal text-black/60">
-              {currentPeriodProjects.length} launches
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-3 py-1 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
+              >
+                {getPeriodOptions().map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <div className="text-sm font-normal text-black/60">
+                {currentPeriodProjects.length} launches
+              </div>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-            >
-              {getPeriodOptions().map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Projects for Selected Period */}
