@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -97,8 +98,12 @@ export default function Index() {
   const allBackers = React.useMemo(() => {
     const backerSet = new Set<string>();
     projects.forEach(project => {
-      if (project.backers) {
-        project.backers.forEach(backer => backerSet.add(backer));
+      if (project.backers && Array.isArray(project.backers)) {
+        project.backers.forEach(backer => {
+          if (typeof backer === 'string') {
+            backerSet.add(backer);
+          }
+        });
       }
     });
     return Array.from(backerSet).sort();
@@ -120,7 +125,7 @@ export default function Index() {
   const filteredProjects = projects.filter(project => {
     const searchMatch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
     const categoryMatch = !selectedCategory || (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory);
-    const backersMatch = selectedBackers.length === 0 || (project.backers && project.backers.some(backer => selectedBackers.includes(backer)));
+    const backersMatch = selectedBackers.length === 0 || (project.backers && Array.isArray(project.backers) && project.backers.some(backer => selectedBackers.includes(backer)));
     return searchMatch && categoryMatch && backersMatch;
   });
 
@@ -236,23 +241,31 @@ export default function Index() {
               <Link 
                 key={`${project.id}-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center justify-center space-x-2 h-8"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
+                style={{ lineHeight: '32px', height: '32px' }}
               >
-                <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                   {project.logo ? (
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
-                      <AvatarFallback className="text-[10px] bg-black/10 text-black/60 flex items-center justify-center">
-                        {project.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
-                      <span className="text-[10px] text-black/60 font-medium">
-                        {project.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                    <img 
+                      src={project.logo} 
+                      alt={`${project.name} logo`}
+                      className="w-5 h-5 rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
+                    style={{ display: project.logo ? 'none' : 'flex' }}
+                  >
+                    <span className="text-[10px] text-black/60 font-medium">
+                      {project.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
@@ -263,23 +276,31 @@ export default function Index() {
               <Link 
                 key={`${project.id}-duplicate-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center justify-center space-x-2 h-8"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
+                style={{ lineHeight: '32px', height: '32px' }}
               >
-                <div className="flex items-center justify-center w-5 h-5 flex-shrink-0">
+                <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
                   {project.logo ? (
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
-                      <AvatarFallback className="text-[10px] bg-black/10 text-black/60 flex items-center justify-center">
-                        {project.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
-                      <span className="text-[10px] text-black/60 font-medium">
-                        {project.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                    <img 
+                      src={project.logo} 
+                      alt={`${project.name} logo`}
+                      className="w-5 h-5 rounded-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
+                    style={{ display: project.logo ? 'none' : 'flex' }}
+                  >
+                    <span className="text-[10px] text-black/60 font-medium">
+                      {project.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
