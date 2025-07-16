@@ -228,79 +228,77 @@ export default function Index() {
               />
             </div>
             
-            {/* Filters Row - All filters on one row for desktop */}
+            {/* ALL FILTERS ON ONE ROW for desktop, stacked on mobile */}
             <div className="flex flex-col lg:flex-row items-center justify-center gap-2 w-full">
-              <div className="flex flex-col lg:flex-row items-center gap-2 w-full lg:w-auto">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full lg:w-[140px]">
-                    <SelectValue placeholder="Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DeFi">DeFi</SelectItem>
-                    <SelectItem value="AI">AI</SelectItem>
-                    <SelectItem value="Social">Social</SelectItem>
-                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <div className="w-full lg:w-[140px]">
-                  <MultiSelect
-                    options={allBackers}
-                    selected={selectedBackers}
-                    onChange={setSelectedBackers}
-                    placeholder="Backers"
-                    className="w-full"
-                  />
-                </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full lg:w-[120px]">
-                      <span className="capitalize text-sm">
-                        {sortBy === 'date' ? 'Launch Date' : sortBy}
-                      </span>
-                      <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSortBy('date')}>
-                      Launch Date
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('name')}>
-                      Name
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('status')}>
-                      Status
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <ToggleGroup 
-                  type="single" 
-                  value={viewMode} 
-                  onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
-                  className="border rounded-md w-full lg:w-auto"
-                >
-                  <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2 sm:px-3">
-                    <Grid2X2 className="h-4 w-4" />
-                    <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Cards</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2 sm:px-3">
-                    <List className="h-4 w-4" />
-                    <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">List</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2 sm:px-3">
-                    <Calendar className="h-4 w-4" />
-                    <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Calendar</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
-
-                {hasFilters && (
-                  <Button variant="outline" size="sm" onClick={clearFilters} className="w-full lg:w-auto">
-                    Clear Filters
-                  </Button>
-                )}
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full lg:w-[140px]">
+                  <SelectValue placeholder="Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DeFi">DeFi</SelectItem>
+                  <SelectItem value="AI">AI</SelectItem>
+                  <SelectItem value="Social">Social</SelectItem>
+                  <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="w-full lg:w-[140px]">
+                <MultiSelect
+                  options={allBackers}
+                  selected={selectedBackers}
+                  onChange={setSelectedBackers}
+                  placeholder="Backers"
+                  className="w-full"
+                />
               </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full lg:w-[120px]">
+                    <span className="capitalize text-sm">
+                      {sortBy === 'date' ? 'Launch Date' : sortBy}
+                    </span>
+                    <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setSortBy('date')}>
+                    Launch Date
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('name')}>
+                    Name
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('status')}>
+                    Status
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <ToggleGroup 
+                type="single" 
+                value={viewMode} 
+                onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
+                className="border rounded-md w-full lg:w-auto"
+              >
+                <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                  <Grid2X2 className="h-4 w-4" />
+                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Cards</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                  <List className="h-4 w-4" />
+                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">List</span>
+                </ToggleGroupItem>
+                <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                  <Calendar className="h-4 w-4" />
+                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Calendar</span>
+                </ToggleGroupItem>
+              </ToggleGroup>
+
+              {hasFilters && (
+                <Button variant="outline" size="sm" onClick={clearFilters} className="w-full lg:w-auto">
+                  Clear Filters
+                </Button>
+              )}
             </div>
             
             {/* Active Filters Row - Full width */}
