@@ -1,84 +1,109 @@
 
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, MessageCircle, Repeat2 } from 'lucide-react';
+import { Twitter, Heart, MessageCircle, Repeat2 } from 'lucide-react';
 
-interface TwitterFeedProps {
-  projectName: string;
-}
-
-export const TwitterFeed: React.FC<TwitterFeedProps> = ({ projectName }) => {
-  // Mock project updates - these are example updates, not real social media feeds
-  const mockUpdates = [
+export const TwitterFeed = () => {
+  // Mock data - this component shows placeholder data as it's not connected to live Twitter API
+  const mockTweets = [
     {
-      id: 1,
-      content: `Excited to announce our latest milestone! ${projectName} is making great progress on the roadmap. 🚀`,
-      author: projectName,
+      id: '1',
+      user: '@NEARProtocol',
+      handle: 'NEAR Protocol',
+      content: 'Exciting developments in the NEAR ecosystem with new token launches coming this quarter! 🚀',
       timestamp: '2h',
-      likes: 42,
+      likes: 142,
+      retweets: 23,
+      replies: 8,
+      verified: true
+    },
+    {
+      id: '2',
+      user: '@intellex_ai',
+      handle: 'Intellex AI',
+      content: 'Building the future of decentralized AI on NEAR. Our token sale is approaching - stay tuned! 🧠',
+      timestamp: '4h',
+      likes: 89,
       retweets: 15,
-      replies: 8
+      replies: 12,
+      verified: false
     },
     {
-      id: 2,
-      content: `Community update: We've reached 10k+ users! Thank you for your continued support. Building the future together! 💪`,
-      author: projectName,
-      timestamp: '1d',
-      likes: 128,
-      retweets: 34,
-      replies: 22
-    },
-    {
-      id: 3,
-      content: `New partnership announcement coming soon. This will unlock even more utility for our token holders. Stay tuned! 👀`,
-      author: projectName,
-      timestamp: '3d',
-      likes: 87,
-      retweets: 28,
-      replies: 15
+      id: '3',
+      user: '@vibes_near',
+      handle: 'VIBES',
+      content: 'Social sentiment meets synthetic data. Trade narratives before they move the market. Q4 2025 launch! 📈',
+      timestamp: '6h',
+      likes: 76,
+      retweets: 19,
+      replies: 5,
+      verified: false
     }
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <MessageSquare className="h-5 w-5 text-blue-500" />
-          <span>Project Updates</span>
-          <Badge variant="outline" className="text-xs">Demo</Badge>
+    <Card className="bg-white border-black/10 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center space-x-2 text-lg font-semibold text-black">
+          <Twitter className="h-5 w-5 text-[#1DA1F2]" />
+          <span>Recent Updates</span>
+          <Badge variant="outline" className="text-xs bg-yellow-100 border-yellow-300 text-yellow-800">
+            Mock Data
+          </Badge>
         </CardTitle>
-        <p className="text-sm text-black/60">Sample project updates - actual social feeds will be integrated soon</p>
+        <p className="text-sm text-black/60 font-medium">
+          Latest news from NEAR ecosystem projects (placeholder content)
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {mockUpdates.map((update) => (
-          <div key={update.id} className="border-b border-gray-100 pb-4 last:border-b-0">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="text-xs">
-                  @{update.author.toLowerCase().replace(/\s+/g, '_')}
-                </Badge>
-                <span className="text-xs text-gray-500">{update.timestamp}</span>
+        {mockTweets.map((tweet) => (
+          <div key={tweet.id} className="border-b border-black/5 pb-4 last:border-b-0 last:pb-0">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-[#00ec97]/20 rounded-full flex items-center justify-center shrink-0">
+                <span className="text-xs font-semibold text-black">
+                  {tweet.handle.charAt(0)}
+                </span>
               </div>
-            </div>
-            <p className="text-sm text-gray-700 mb-3">{update.content}</p>
-            <div className="flex items-center space-x-4 text-xs text-gray-500">
-              <div className="flex items-center space-x-1">
-                <Heart className="h-3 w-3" />
-                <span>{update.likes}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Repeat2 className="h-3 w-3" />
-                <span>{update.retweets}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MessageCircle className="h-3 w-3" />
-                <span>{update.replies}</span>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="font-semibold text-sm text-black truncate">
+                    {tweet.handle}
+                  </span>
+                  <span className="text-xs text-black/50 font-medium">
+                    {tweet.user}
+                  </span>
+                  <span className="text-xs text-black/40">•</span>
+                  <span className="text-xs text-black/50 font-medium">
+                    {tweet.timestamp}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-black/80 font-medium mb-3 leading-relaxed">
+                  {tweet.content}
+                </p>
+                
+                <div className="flex items-center space-x-6">
+                  <button className="flex items-center space-x-1 text-black/50 hover:text-[#1DA1F2] transition-colors">
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="text-xs font-medium">{tweet.replies}</span>
+                  </button>
+                  
+                  <button className="flex items-center space-x-1 text-black/50 hover:text-[#17d9d4] transition-colors">
+                    <Repeat2 className="h-4 w-4" />
+                    <span className="text-xs font-medium">{tweet.retweets}</span>
+                  </button>
+                  
+                  <button className="flex items-center space-x-1 text-black/50 hover:text-[#e91e63] transition-colors">
+                    <Heart className="h-4 w-4" />
+                    <span className="text-xs font-medium">{tweet.likes}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         ))}
-      </div>
+      </CardContent>
     </Card>
   );
 };

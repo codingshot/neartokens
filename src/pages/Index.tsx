@@ -1,474 +1,295 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ProjectExplorer } from '@/components/ProjectExplorer';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Search, Grid3X3, List, Filter, TrendingUp, Clock, Users, FileText } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProjectExplorer } from '@/components/ProjectExplorer';
+import { CalendarView } from '@/components/CalendarView';
+import { AnalyticsOverview } from '@/components/AnalyticsOverview';
+import { ProjectStatusChart } from '@/components/ProjectStatusChart';
+import { TwitterFeed } from '@/components/TwitterFeed';
+import { Footer } from '@/components/Footer';
+import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 
-interface TokenData {
-  id: string;
+interface Project {
+  id: number | string;
   name: string;
-  symbol?: string;
-  description?: string;
   category: string | string[];
   status: 'upcoming' | 'completed';
   type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
   sale_date?: string;
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
   backers?: string[];
-  social?: {
-    twitter?: string;
-    telegram?: string;
-  };
-  website?: string;
-  key_features?: string[];
 }
 
-interface TokensData {
-  token_sales: TokenData[];
-  token_listings: TokenData[];
-  metadata: {
-    title: string;
-    description: string;
-    last_updated: string;
-  };
-  statistics: {
-    total_token_sales: number;
-    total_token_listings: number;
-    total_projects: number;
-    categories: Record<string, number>;
-  };
-}
-
-const fetchTokensData = async (): Promise<TokensData> => {
-  const response = await fetch('/data/tokens.json');
-  if (!response.ok) {
-    throw new Error('Failed to fetch tokens data');
+const MOCK_PROJECTS: Project[] = [
+  {
+    id: '1',
+    name: 'Intellex AI',
+    category: ['AI', 'DeFi'],
+    status: 'upcoming',
+    type: 'sale',
+    symbol: 'ILX',
+    description: 'Decentralized AI compute and data marketplace',
+    sale_date: '2024-08-15',
+    size_fdv: '$50M',
+    expected_fdv: '$200M',
+    backers: ['NGC Ventures', 'NEAR Foundation']
+  },
+  {
+    id: '2',
+    name: 'VIBES',
+    category: ['Social', 'DeFi'],
+    status: 'upcoming',
+    type: 'listing',
+    symbol: 'VIBES',
+    description: 'Social sentiment meets synthetic data',
+    launch_date: '2024-09-01',
+    size_fdv: '$20M',
+    expected_fdv: '$80M',
+    backers: ['Pantera Capital', 'Dragonfly Capital']
+  },
+  {
+    id: '3',
+    name: 'Aether Protocol',
+    category: ['Infrastructure', 'DeFi'],
+    status: 'completed',
+    type: 'sale',
+    symbol: 'ATH',
+    description: 'Decentralized compute network for Web3',
+    sale_date: '2024-07-01',
+    size_fdv: '$100M',
+    expected_fdv: '$400M',
+    backers: ['a16z', 'Coinbase Ventures']
+  },
+  {
+    id: '4',
+    name: 'Aurora Cloud',
+    category: ['Infrastructure', 'AI'],
+    status: 'completed',
+    type: 'listing',
+    symbol: 'AURC',
+    description: 'Decentralized cloud computing platform',
+    launch_date: '2024-06-15',
+    size_fdv: '$80M',
+    expected_fdv: '$320M',
+    backers: ['Binance Labs', 'Polychain Capital']
+  },
+  {
+    id: '5',
+    name: 'Celestial Exchange',
+    category: ['DeFi', 'Infrastructure'],
+    status: 'upcoming',
+    type: 'sale',
+    symbol: 'CELX',
+    description: 'Decentralized exchange for NEAR assets',
+    sale_date: '2024-10-01',
+    size_fdv: '$60M',
+    expected_fdv: '$240M',
+    backers: ['Sequoia Capital', 'Paradigm']
+  },
+  {
+    id: '6',
+    name: 'Galactic Protocol',
+    category: ['Social', 'AI'],
+    status: 'completed',
+    type: 'listing',
+    symbol: 'GALT',
+    description: 'Decentralized social media platform',
+    launch_date: '2024-05-20',
+    size_fdv: '$40M',
+    expected_fdv: '$160M',
+    backers: ['Lightspeed Venture Partners', 'Andreessen Horowitz']
+  },
+  {
+    id: '7',
+    name: 'Nova Network',
+    category: ['Infrastructure', 'DeFi'],
+    status: 'upcoming',
+    type: 'sale',
+    symbol: 'NOVA',
+    description: 'Decentralized data storage network',
+    sale_date: '2024-11-15',
+    size_fdv: '$70M',
+    expected_fdv: '$280M',
+    backers: ['Union Square Ventures', 'Ribbit Capital']
+  },
+  {
+    id: '8',
+    name: 'Orion AI',
+    category: ['AI', 'Social'],
+    status: 'completed',
+    type: 'listing',
+    symbol: 'ORIA',
+    description: 'Decentralized AI-powered content creation platform',
+    launch_date: '2024-04-10',
+    size_fdv: '$90M',
+    expected_fdv: '$360M',
+    backers: ['Khosla Ventures', 'Kleiner Perkins']
+  },
+  {
+    id: '9',
+    name: 'Polaris Protocol',
+    category: ['DeFi', 'Social'],
+    status: 'upcoming',
+    type: 'sale',
+    symbol: 'POLA',
+    description: 'Decentralized lending and borrowing platform',
+    sale_date: '2024-12-01',
+    size_fdv: '$55M',
+    expected_fdv: '$220M',
+    backers: ['Digital Currency Group', 'Blockchain Capital']
+  },
+  {
+    id: '10',
+    name: 'Quantum Exchange',
+    category: ['Infrastructure', 'AI'],
+    status: 'completed',
+    type: 'listing',
+    symbol: 'QUEX',
+    description: 'Decentralized exchange for AI models',
+    launch_date: '2024-03-01',
+    size_fdv: '$45M',
+    expected_fdv: '$180M',
+    backers: ['Sequoia Capital', 'Paradigm']
   }
-  return response.json();
-};
+];
 
-const Index = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  
-  // Initialize state from URL parameters
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
-  const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || 'all');
-  const [selectedType, setSelectedType] = useState(searchParams.get('type') || 'all');
-  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>(
-    (searchParams.get('view') as 'cards' | 'list' | 'calendar') || 'cards'
-  );
+export default function Index() {
+  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
 
-  // Update URL when filters change
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
-    if (selectedCategory !== 'all') params.set('category', selectedCategory);
-    if (selectedStatus !== 'all') params.set('status', selectedStatus);
-    if (selectedType !== 'all') params.set('type', selectedType);
-    if (viewMode !== 'cards') params.set('view', viewMode);
-    
-    setSearchParams(params);
-  }, [searchTerm, selectedCategory, selectedStatus, selectedType, viewMode, setSearchParams]);
-
-  const { data: tokensData, isLoading, error } = useQuery({
-    queryKey: ['tokens'],
-    queryFn: fetchTokensData,
-  });
-
-  const allProjects = useMemo(() => {
-    if (!tokensData) return [];
-    return [...tokensData.token_sales, ...tokensData.token_listings];
-  }, [tokensData]);
-
-  const categories = useMemo(() => {
-    const cats = new Set<string>();
-    allProjects.forEach(project => {
-      if (Array.isArray(project.category)) {
-        project.category.forEach(cat => cats.add(cat));
-      } else {
-        cats.add(project.category);
-      }
-    });
-    return Array.from(cats).sort();
-  }, [allProjects]);
-
-  const filteredProjects = useMemo(() => {
-    let filtered = allProjects.filter(project => {
-      const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           project.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = selectedCategory === 'all' || 
-                             (Array.isArray(project.category) 
-                               ? project.category.includes(selectedCategory)
-                               : project.category === selectedCategory);
-      
-      const matchesStatus = selectedStatus === 'all' || project.status === selectedStatus;
-      
-      const matchesType = selectedType === 'all' || project.type === selectedType;
-
-      return matchesSearch && matchesCategory && matchesStatus && matchesType;
-    });
-
-    // Enhanced sorting by launch date with proper quarter and prefix handling
-    return filtered.sort((a, b) => {
-      const dateA = a.sale_date || a.launch_date || '';
-      const dateB = b.sale_date || b.launch_date || '';
-      
-      // Prioritize upcoming status
-      if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
-      if (b.status === 'upcoming' && a.status !== 'upcoming') return 1;
-      
-      // Custom date parsing for quarters and prefixes
-      const parseCustomDate = (dateStr: string) => {
-        if (!dateStr) return { year: 9999, quarter: 5, prefix: 2 }; // Sort empty dates last
-        
-        // Extract year
-        const yearMatch = dateStr.match(/(\d{4})/);
-        const year = yearMatch ? parseInt(yearMatch[1]) : 9999;
-        
-        // Extract quarter
-        let quarter = 5; // Default for non-quarter dates
-        const quarterMatch = dateStr.match(/Q(\d)/);
-        if (quarterMatch) {
-          quarter = parseInt(quarterMatch[1]);
-        }
-        
-        // Extract prefix (Early = 0, no prefix = 1, Late = 2)
-        let prefix = 1;
-        if (dateStr.toLowerCase().includes('early')) {
-          prefix = 0;
-        } else if (dateStr.toLowerCase().includes('late')) {
-          prefix = 2;
-        }
-        
-        return { year, quarter, prefix };
-      };
-      
-      const parsedA = parseCustomDate(dateA);
-      const parsedB = parseCustomDate(dateB);
-      
-      // Sort by year first
-      if (parsedA.year !== parsedB.year) {
-        return parsedA.year - parsedB.year;
-      }
-      
-      // Then by quarter
-      if (parsedA.quarter !== parsedB.quarter) {
-        return parsedA.quarter - parsedB.quarter;
-      }
-      
-      // Finally by prefix (Early < no prefix < Late)
-      return parsedA.prefix - parsedB.prefix;
-    });
-  }, [allProjects, searchTerm, selectedCategory, selectedStatus, selectedType]);
-
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('all');
-    setSelectedStatus('all');
-    setSelectedType('all');
-    setSearchParams(new URLSearchParams());
-  };
+  const upcomingProjects = projects.filter(project => project.status === 'upcoming');
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ec97]"></div>
-      </div>
-    );
-  }
+  const filteredProjects = projects.filter(project => {
+    const searchMatch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const categoryMatch = selectedCategory ? (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory) : true;
+    return searchMatch && categoryMatch;
+  });
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-black mb-2">Error loading data</h1>
-          <p className="text-black/60">Please try refreshing the page</p>
-        </div>
-      </div>
-    );
-  }
-
-  const upcomingProjects = allProjects.filter(p => p.status === 'upcoming').slice(0, 20);
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory(null);
+  };
 
   return (
-    <div className="min-h-screen bg-[#f2f1e9]">
-      {/* Hero Section - Reduced padding */}
-      <section className="bg-white border-b border-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
-          <div className="text-center mb-4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-2">
-              NEAR Token Season <span className="text-[#00ec97]">2025</span>
-            </h1>
-            <p className="text-lg md:text-xl text-black/70 font-medium max-w-3xl mx-auto leading-relaxed">
-              Track upcoming token launches and listings on NEAR Protocol. 
-              Stay updated with the latest projects building on NEAR's ecosystem.
-            </p>
+    <div className="min-h-screen bg-[#f5f5f5]">
+      {/* Header */}
+      <header className="bg-white border-b border-black/10 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <h1 className="text-lg font-semibold text-black">NEAR Tokens</h1>
+            </Link>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                <Link to="/submit" className="flex items-center space-x-2">
+                  <Zap className="h-4 w-4" />
+                  <span>Submit Token</span>
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Link to="/blog" className="flex items-center space-x-2">
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Blog</span>
+                </Link>
+              </Button>
+            </div>
           </div>
+        </div>
+      </header>
 
-          {/* Stats Cards - Reduced spacing */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-[#00ec97]/5 border-[#00ec97]/20 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4 md:p-6 text-center">
-                <TrendingUp className="h-8 w-8 text-[#00ec97] mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-black mb-1">
-                  {tokensData?.statistics.total_projects || 0}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Total Projects</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-[#ff7966]/5 border-[#ff7966]/20 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4 md:p-6 text-center">
-                <Clock className="h-8 w-8 text-[#ff7966] mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-black mb-1">
-                  {tokensData?.statistics.total_token_sales || 0}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Token Sales</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-[#9797ff]/5 border-[#9797ff]/20 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4 md:p-6 text-center">
-                <Users className="h-8 w-8 text-[#9797ff] mx-auto mb-2" />
-                <div className="text-2xl md:text-3xl font-bold text-black mb-1">
-                  {tokensData?.statistics.total_token_listings || 0}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Token Listings</div>
-              </CardContent>
-            </Card>
+      {/* Hero Section */}
+      <section className="bg-white border-b border-black/10 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl font-semibold text-black mb-4">
+            Track token launches on NEAR Protocol ecosystem
+          </h2>
+          <p className="text-lg text-black/70 font-medium mb-6">
+            Stay updated on upcoming and completed token sales, listings, and more.
+          </p>
+          <div className="flex items-center justify-center space-x-4">
+            <Input
+              type="text"
+              placeholder="Search for tokens..."
+              className="max-w-md"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Select onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>All Categories</SelectItem>
+                <SelectItem value="DeFi">DeFi</SelectItem>
+                <SelectItem value="AI">AI</SelectItem>
+                <SelectItem value="Social">Social</SelectItem>
+                <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Clear Filters
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Upcoming Tokens Ticker */}
-      {upcomingProjects.length > 0 && (
-        <div className="w-full bg-black/5 border-b border-black/10 py-2 overflow-hidden">
-          <div className="flex items-center mb-1 px-6">
-            <Clock className="h-4 w-4 mr-2 text-black/60" />
-            <h3 className="text-sm font-semibold text-black">Upcoming Tokens</h3>
-          </div>
-          
-          <div className="relative">
-            <div className="animate-scroll flex whitespace-nowrap">
-              {/* Duplicate items for seamless loop */}
-              {[...upcomingProjects, ...upcomingProjects, ...upcomingProjects].map((project, index) => {
-                const launchDate = project.sale_date || project.launch_date || 'TBD';
-                const symbol = project.symbol || 'TBD';
-                
-                return (
-                  <Link
-                    key={`${project.id}-${index}`}
-                    to={`/project/${project.id}`}
-                    className="inline-flex items-center bg-white rounded-lg border border-black/10 p-2 mx-2 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 flex-shrink-0"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="font-semibold text-sm text-black">
-                        {project.name}
-                      </div>
-                      <div className="text-xs text-black/60 font-medium">
-                        ${symbol}
-                      </div>
-                      <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-2 py-0.5">
-                        {launchDate}
-                      </Badge>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+      <section className="bg-[#00ec97] py-3 overflow-hidden">
+        <div className="animate-scroll whitespace-nowrap">
+          {upcomingProjects.map((project) => (
+            <span key={project.id} className="text-black font-semibold text-lg mx-4">
+              {project.name} ({project.symbol}) - {project.status}
+            </span>
+          ))}
         </div>
-      )}
+      </section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg border border-black/10 p-4 md:p-6 mb-6 shadow-sm">
-          <div className="flex flex-col space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-black/40" />
-              <Input
-                placeholder="Search projects..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-black/20 focus:border-[#00ec97] font-medium"
-              />
-            </div>
-
-            {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              {/* Category Filter */}
-              <div>
-                <label className="block text-xs font-semibold text-black/70 mb-1">Category</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <label className="block text-xs font-semibold text-black/70 mb-1">Status</label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="w-full px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-                >
-                  <option value="all">All Status</option>
-                  <option value="upcoming">Upcoming</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-
-              {/* Type Filter */}
-              <div>
-                <label className="block text-xs font-semibold text-black/70 mb-1">Type</label>
-                <select
-                  value={selectedType}
-                  onChange={(e) => setSelectedType(e.target.value)}
-                  className="w-full px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-                >
-                  <option value="all">All Types</option>
-                  <option value="sale">Token Sale</option>
-                  <option value="listing">Token Listing</option>
-                </select>
-              </div>
-
-              {/* View Mode */}
-              <div>
-                <label className="block text-xs font-semibold text-black/70 mb-1">View</label>
-                <div className="flex border border-black/20 rounded-md overflow-hidden">
-                  <Button
-                    variant={viewMode === 'cards' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('cards')}
-                    className={`flex-1 rounded-none border-none ${viewMode === 'cards' ? 'bg-[#00ec97] text-black' : 'hover:bg-black/5'}`}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className={`flex-1 rounded-none border-none ${viewMode === 'list' ? 'bg-[#00ec97] text-black' : 'hover:bg-black/5'}`}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('calendar')}
-                    className={`flex-1 rounded-none border-none ${viewMode === 'calendar' ? 'bg-[#00ec97] text-black' : 'hover:bg-black/5'}`}
-                  >
-                    <Calendar className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Filters */}
-            {(selectedCategory !== 'all' || selectedStatus !== 'all' || selectedType !== 'all' || searchTerm) && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-xs font-semibold text-black/70">Active filters:</span>
-                {searchTerm && (
-                  <Badge variant="outline" className="text-xs font-medium">
-                    Search: "{searchTerm}"
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                {selectedCategory !== 'all' && (
-                  <Badge variant="outline" className="text-xs font-medium">
-                    {selectedCategory}
-                    <button
-                      onClick={() => setSelectedCategory('all')}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                {selectedStatus !== 'all' && (
-                  <Badge variant="outline" className="text-xs font-medium">
-                    {selectedStatus}
-                    <button
-                      onClick={() => setSelectedStatus('all')}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                {selectedType !== 'all' && (
-                  <Badge variant="outline" className="text-xs font-medium">
-                    {selectedType}
-                    <button
-                      onClick={() => setSelectedType('all')}
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  </Badge>
-                )}
-                <Button
-                  onClick={clearAllFilters}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                >
-                  Clear All
-                </Button>
-              </div>
-            )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-black">
+            Token Launches
+          </h3>
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="sm" onClick={() => setViewMode('cards')}>
+              <Search className="h-4 w-4 mr-2" />
+              <span>Cards</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setViewMode('list')}>
+              <Filter className="h-4 w-4 mr-2" />
+              <span>List</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setViewMode('calendar')}>
+              <Calendar className="h-4 w-4 mr-2" />
+              <span>Calendar</span>
+            </Button>
           </div>
         </div>
 
-        {/* Results */}
-        <div className="bg-white rounded-lg border border-black/10 shadow-sm">
-          <div className="p-4 md:p-6 border-b border-black/10">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl font-semibold text-black">
-                Projects ({filteredProjects.length})
-              </h2>
-            </div>
-          </div>
-          
-          <div className="p-4 md:p-6">
-            <ProjectExplorer 
-              projects={filteredProjects} 
-              viewMode={viewMode} 
-              onCategoryClick={handleCategoryClick}
-            />
-          </div>
-        </div>
-      </div>
+        <ProjectExplorer
+          projects={filteredProjects}
+          viewMode={viewMode}
+          onCategoryClick={handleCategoryClick}
+        />
+      </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
-};
-
-export default Index;
+}
