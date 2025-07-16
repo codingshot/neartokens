@@ -344,7 +344,7 @@ const ProjectDetail = () => {
                       {Object.entries(project.traction).map(([key, value]) => (
                         <div key={key} className="flex justify-between">
                           <span className="font-medium text-black/70 capitalize">{key.replace(/_/g, ' ')}:</span>
-                          <span className="font-semibold text-black">{value}</span>
+                          <span className="font-semibold text-black">{String(value)}</span>
                         </div>
                       ))}
                     </div>
@@ -380,7 +380,7 @@ const ProjectDetail = () => {
           </TabsContent>
 
           <TabsContent value="social" className="space-y-4">
-            <TwitterFeed projectName={project.name} />
+            <TwitterFeed />
           </TabsContent>
         </Tabs>
       </div>

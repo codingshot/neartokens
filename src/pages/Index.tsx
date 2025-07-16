@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { TwitterFeed } from '@/components/TwitterFeed';
 import { Footer } from '@/components/Footer';
 import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 interface Project {
   id: number | string;
@@ -29,145 +31,30 @@ interface Project {
   backers?: string[];
 }
 
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: '1',
-    name: 'Intellex AI',
-    category: ['AI', 'DeFi'],
-    status: 'upcoming',
-    type: 'sale',
-    symbol: 'ILX',
-    description: 'Decentralized AI compute and data marketplace',
-    sale_date: '2024-08-15',
-    size_fdv: '$50M',
-    expected_fdv: '$200M',
-    backers: ['NGC Ventures', 'NEAR Foundation']
-  },
-  {
-    id: '2',
-    name: 'VIBES',
-    category: ['Social', 'DeFi'],
-    status: 'upcoming',
-    type: 'listing',
-    symbol: 'VIBES',
-    description: 'Social sentiment meets synthetic data',
-    launch_date: '2024-09-01',
-    size_fdv: '$20M',
-    expected_fdv: '$80M',
-    backers: ['Pantera Capital', 'Dragonfly Capital']
-  },
-  {
-    id: '3',
-    name: 'Aether Protocol',
-    category: ['Infrastructure', 'DeFi'],
-    status: 'completed',
-    type: 'sale',
-    symbol: 'ATH',
-    description: 'Decentralized compute network for Web3',
-    sale_date: '2024-07-01',
-    size_fdv: '$100M',
-    expected_fdv: '$400M',
-    backers: ['a16z', 'Coinbase Ventures']
-  },
-  {
-    id: '4',
-    name: 'Aurora Cloud',
-    category: ['Infrastructure', 'AI'],
-    status: 'completed',
-    type: 'listing',
-    symbol: 'AURC',
-    description: 'Decentralized cloud computing platform',
-    launch_date: '2024-06-15',
-    size_fdv: '$80M',
-    expected_fdv: '$320M',
-    backers: ['Binance Labs', 'Polychain Capital']
-  },
-  {
-    id: '5',
-    name: 'Celestial Exchange',
-    category: ['DeFi', 'Infrastructure'],
-    status: 'upcoming',
-    type: 'sale',
-    symbol: 'CELX',
-    description: 'Decentralized exchange for NEAR assets',
-    sale_date: '2024-10-01',
-    size_fdv: '$60M',
-    expected_fdv: '$240M',
-    backers: ['Sequoia Capital', 'Paradigm']
-  },
-  {
-    id: '6',
-    name: 'Galactic Protocol',
-    category: ['Social', 'AI'],
-    status: 'completed',
-    type: 'listing',
-    symbol: 'GALT',
-    description: 'Decentralized social media platform',
-    launch_date: '2024-05-20',
-    size_fdv: '$40M',
-    expected_fdv: '$160M',
-    backers: ['Lightspeed Venture Partners', 'Andreessen Horowitz']
-  },
-  {
-    id: '7',
-    name: 'Nova Network',
-    category: ['Infrastructure', 'DeFi'],
-    status: 'upcoming',
-    type: 'sale',
-    symbol: 'NOVA',
-    description: 'Decentralized data storage network',
-    sale_date: '2024-11-15',
-    size_fdv: '$70M',
-    expected_fdv: '$280M',
-    backers: ['Union Square Ventures', 'Ribbit Capital']
-  },
-  {
-    id: '8',
-    name: 'Orion AI',
-    category: ['AI', 'Social'],
-    status: 'completed',
-    type: 'listing',
-    symbol: 'ORIA',
-    description: 'Decentralized AI-powered content creation platform',
-    launch_date: '2024-04-10',
-    size_fdv: '$90M',
-    expected_fdv: '$360M',
-    backers: ['Khosla Ventures', 'Kleiner Perkins']
-  },
-  {
-    id: '9',
-    name: 'Polaris Protocol',
-    category: ['DeFi', 'Social'],
-    status: 'upcoming',
-    type: 'sale',
-    symbol: 'POLA',
-    description: 'Decentralized lending and borrowing platform',
-    sale_date: '2024-12-01',
-    size_fdv: '$55M',
-    expected_fdv: '$220M',
-    backers: ['Digital Currency Group', 'Blockchain Capital']
-  },
-  {
-    id: '10',
-    name: 'Quantum Exchange',
-    category: ['Infrastructure', 'AI'],
-    status: 'completed',
-    type: 'listing',
-    symbol: 'QUEX',
-    description: 'Decentralized exchange for AI models',
-    launch_date: '2024-03-01',
-    size_fdv: '$45M',
-    expected_fdv: '$180M',
-    backers: ['Sequoia Capital', 'Paradigm']
+interface TokensData {
+  token_sales: Project[];
+  token_listings: Project[];
+}
+
+const fetchTokensData = async (): Promise<TokensData> => {
+  const response = await fetch('/data/tokens.json');
+  if (!response.ok) {
+    throw new Error('Failed to fetch tokens data');
   }
-];
+  return response.json();
+};
 
 export default function Index() {
-  const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
 
+  const { data: tokensData, isLoading, error } = useQuery({
+    queryKey: ['tokens'],
+    queryFn: fetchTokensData,
+  });
+
+  const projects = tokensData ? [...tokensData.token_sales, ...tokensData.token_listings] : [];
   const upcomingProjects = projects.filter(project => project.status === 'upcoming');
 
   const handleCategoryClick = (category: string) => {
@@ -184,6 +71,25 @@ export default function Index() {
     setSearchQuery('');
     setSelectedCategory(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ec97]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold text-black mb-2">Error loading data</h1>
+          <p className="text-black/60">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
@@ -202,10 +108,10 @@ export default function Index() {
                 </Link>
               </Button>
               <Button variant="ghost" size="sm">
-                <Link to="/blog" className="flex items-center space-x-2">
+                <a href="https://www.near.org/blog/token-season-on-near" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
                   <ExternalLink className="h-4 w-4" />
                   <span>Blog</span>
-                </Link>
+                </a>
               </Button>
             </div>
           </div>
@@ -213,12 +119,12 @@ export default function Index() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-white border-b border-black/10 py-8">
+      <section className="bg-white border-b border-black/10 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl font-semibold text-black mb-4">
+          <h2 className="text-3xl font-semibold text-black mb-3">
             Track token launches on NEAR Protocol ecosystem
           </h2>
-          <p className="text-lg text-black/70 font-medium mb-6">
+          <p className="text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="flex items-center justify-center space-x-4">
@@ -249,13 +155,15 @@ export default function Index() {
       </section>
 
       {/* Upcoming Tokens Ticker */}
-      <section className="bg-[#00ec97] py-3 overflow-hidden">
-        <div className="animate-scroll whitespace-nowrap">
-          {upcomingProjects.map((project) => (
-            <span key={project.id} className="text-black font-semibold text-lg mx-4">
-              {project.name} ({project.symbol}) - {project.status}
-            </span>
-          ))}
+      <section className="bg-[#00ec97] py-3 overflow-hidden relative">
+        <div className="ticker-wrapper">
+          <div className="ticker-content">
+            {upcomingProjects.concat(upcomingProjects).map((project, index) => (
+              <span key={`${project.id}-${index}`} className="ticker-item text-black font-semibold text-lg">
+                {project.name} ({project.symbol || 'TBD'}) - {project.status}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
