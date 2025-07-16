@@ -44,9 +44,47 @@ const fetchTokensData = async (): Promise<TokensData> => {
   return response.json();
 };
 
+// Helper function to parse dates and convert to comparable format
+const parseLaunchDate = (dateStr: string): Date => {
+  if (!dateStr) return new Date('9999-12-31'); // Far future for TBD dates
+  
+  // Handle "Early Q4 2024", "Late Q3 2024", etc.
+  const quarterMatch = dateStr.match(/(Early|Late)?\s*(Q[1-4])\s*(\d{4})/i);
+  if (quarterMatch) {
+    const [, timing, quarter, year] = quarterMatch;
+    const quarterNum = parseInt(quarter.replace('Q', ''));
+    const yearNum = parseInt(year);
+    
+    // Convert quarters to months (Q1=Jan-Mar, Q2=Apr-Jun, Q3=Jul-Sep, Q4=Oct-Dec)
+    const quarterStartMonth = (quarterNum - 1) * 3;
+    
+    // For sorting: Early = start of quarter, Late = end of quarter
+    let month = quarterStartMonth;
+    let day = 1;
+    
+    if (timing?.toLowerCase() === 'late') {
+      month = quarterStartMonth + 2; // Last month of quarter
+      day = 28; // Near end of month
+    } else if (timing?.toLowerCase() === 'early') {
+      month = quarterStartMonth; // First month of quarter
+      day = 1;
+    } else {
+      // No timing specified, assume middle of quarter
+      month = quarterStartMonth + 1;
+      day = 15;
+    }
+    
+    return new Date(yearNum, month, day);
+  }
+  
+  // Try parsing as regular date
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? new Date('9999-12-31') : parsed;
+};
+
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
 
   const { data: tokensData, isLoading, error } = useQuery({
@@ -55,7 +93,15 @@ export default function Index() {
   });
 
   const projects = tokensData ? [...tokensData.token_sales, ...tokensData.token_listings] : [];
-  const upcomingProjects = projects.filter(project => project.status === 'upcoming');
+  
+  // Sort upcoming projects by launch date for ticker
+  const upcomingProjects = projects
+    .filter(project => project.status === 'upcoming')
+    .sort((a, b) => {
+      const dateA = parseLaunchDate(a.sale_date || a.launch_date || '');
+      const dateB = parseLaunchDate(b.sale_date || b.launch_date || '');
+      return dateA.getTime() - dateB.getTime();
+    });
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
@@ -63,13 +109,13 @@ export default function Index() {
 
   const filteredProjects = projects.filter(project => {
     const searchMatch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const categoryMatch = selectedCategory ? (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory) : true;
+    const categoryMatch = !selectedCategory || (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory);
     return searchMatch && categoryMatch;
   });
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory(null);
+    setSelectedCategory('');
   };
 
   if (isLoading) {
@@ -129,12 +175,12 @@ export default function Index() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Select onValueChange={setSelectedCategory}>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={null}>All Categories</SelectItem>
+                <SelectItem value="">All Categories</SelectItem>
                 <SelectItem value="DeFi">DeFi</SelectItem>
                 <SelectItem value="AI">AI</SelectItem>
                 <SelectItem value="Social">Social</SelectItem>
@@ -153,13 +199,17 @@ export default function Index() {
         <div className="whitespace-nowrap">
           <div className="inline-block animate-scroll">
             {upcomingProjects.map((project, index) => (
-              <span key={`${project.id}-${index}`} className="text-black font-semibold text-lg mr-8">
-                {project.name} ({project.symbol || 'TBD'}) - {project.sale_date || project.launch_date || 'TBD'} 💸
+              <span key={`${project.id}-${index}`} className="text-black font-semibold mr-8">
+                <span className="text-lg">{project.name}</span>
+                {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
+                <span className="text-sm ml-2">{project.sale_date || project.launch_date || 'TBD'}</span>
               </span>
             ))}
             {upcomingProjects.map((project, index) => (
-              <span key={`${project.id}-duplicate-${index}`} className="text-black font-semibold text-lg mr-8">
-                {project.name} ({project.symbol || 'TBD'}) - {project.sale_date || project.launch_date || 'TBD'} 💸
+              <span key={`${project.id}-duplicate-${index}`} className="text-black font-semibold mr-8">
+                <span className="text-lg">{project.name}</span>
+                {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
+                <span className="text-sm ml-2">{project.sale_date || project.launch_date || 'TBD'}</span>
               </span>
             ))}
           </div>
