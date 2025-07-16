@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
 import { CalendarView } from '@/components/CalendarView';
 import { AnalyticsOverview } from '@/components/AnalyticsOverview';
@@ -13,30 +15,9 @@ import { ProjectStatusChart } from '@/components/ProjectStatusChart';
 import { TwitterFeed } from '@/components/TwitterFeed';
 import { Footer } from '@/components/Footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen } from 'lucide-react';
+import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen, Grid2X2, List, ChevronDown, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-
-// Import the Project interface from ProjectCard to avoid duplicates
-interface Project {
-  id: number | string;
-  name: string;
-  category: string | string[];
-  status: 'upcoming' | 'completed';
-  type?: 'sale' | 'listing';
-  symbol?: string;
-  description?: string;
-  sale_date?: string;
-  launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
-  logo?: string;
-  backers?: Array<{
-    name: string;
-    logo?: string;
-    link?: string;
-  }> | string[];
-}
 
 interface TokensData {
   token_sales: Project[];
@@ -90,6 +71,7 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedBackers, setSelectedBackers] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'status'>('date');
 
   const { data: tokensData, isLoading, error } = useQuery({
     queryKey: ['tokens'],
@@ -154,6 +136,18 @@ export default function Index() {
   // Check if any filters are applied
   const hasFilters = searchQuery.trim() !== '' || selectedCategory !== '' || selectedBackers.length > 0;
 
+  // Get active filters for display
+  const activeFilters = [];
+  if (searchQuery.trim()) activeFilters.push({ type: 'search', value: searchQuery.trim() });
+  if (selectedCategory) activeFilters.push({ type: 'category', value: selectedCategory });
+  selectedBackers.forEach(backer => activeFilters.push({ type: 'backer', value: backer }));
+
+  const removeFilter = (type: string, value: string) => {
+    if (type === 'search') setSearchQuery('');
+    if (type === 'category') setSelectedCategory('');
+    if (type === 'backer') setSelectedBackers(prev => prev.filter(b => b !== value));
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -213,37 +207,95 @@ export default function Index() {
           <p className="text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
-            <Input
-              type="text"
-              placeholder="Search for tokens..."
-              className="max-w-md"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DeFi">DeFi</SelectItem>
-                <SelectItem value="AI">AI</SelectItem>
-                <SelectItem value="Social">Social</SelectItem>
-                <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-              </SelectContent>
-            </Select>
-            <MultiSelect
-              options={allBackers}
-              selected={selectedBackers}
-              onChange={setSelectedBackers}
-              placeholder="Filter by backers"
-              className="w-full sm:w-auto"
-            />
-            {hasFilters && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                <span className="sm:hidden">Clear</span>
-                <span className="hidden sm:inline">Clear Filters</span>
-              </Button>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <Input
+                type="text"
+                placeholder="Search for tokens..."
+                className="max-w-md"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <div className="flex items-center space-x-4">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DeFi">DeFi</SelectItem>
+                    <SelectItem value="AI">AI</SelectItem>
+                    <SelectItem value="Social">Social</SelectItem>
+                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                  </SelectContent>
+                </Select>
+                <MultiSelect
+                  options={allBackers}
+                  selected={selectedBackers}
+                  onChange={setSelectedBackers}
+                  placeholder="Backers"
+                  className="w-full sm:w-auto"
+                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-fit">
+                      <span className="capitalize">{sortBy === 'date' ? 'Launch Date' : sortBy}</span>
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortBy('date')}>
+                      Launch Date
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('name')}>
+                      Name
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('status')}>
+                      Status
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')}>
+                  <ToggleGroupItem value="cards" aria-label="Card view">
+                    <Grid2X2 className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="list" aria-label="List view">
+                    <List className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="calendar" aria-label="Calendar view">
+                    <Calendar className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+                {hasFilters && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    <span className="sm:hidden">Clear</span>
+                    <span className="hidden sm:inline">Clear Filters</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {/* Active Filters Row */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {activeFilters.map((filter, index) => (
+                  <Badge 
+                    key={`${filter.type}-${filter.value}-${index}`}
+                    variant="secondary" 
+                    className="flex items-center gap-1 bg-[#00ec97]/10 text-black border-[#00ec97]/30"
+                  >
+                    <span className="text-xs font-medium">
+                      {filter.type === 'search' ? 'Search: ' : ''}
+                      {filter.value}
+                    </span>
+                    <button
+                      onClick={() => removeFilter(filter.type, filter.value)}
+                      className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -339,30 +391,11 @@ export default function Index() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-black">
-            Token Launches
-          </h3>
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <Button variant="outline" size="sm" onClick={() => setViewMode('cards')}>
-              <Search className="h-4 w-4" />
-              <span className="hidden sm:inline sm:ml-2">Cards</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setViewMode('list')}>
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline sm:ml-2">List</span>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setViewMode('calendar')}>
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline sm:ml-2">Calendar</span>
-            </Button>
-          </div>
-        </div>
-
         <ProjectExplorer
           projects={filteredProjects}
           viewMode={viewMode}
           onCategoryClick={handleCategoryClick}
+          sortBy={sortBy}
         />
       </main>
 
