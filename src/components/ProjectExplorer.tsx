@@ -108,7 +108,7 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
           return (
             <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
               <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <Link 
@@ -136,7 +136,7 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                       </p>
                     )}
 
-                    <div className="flex flex-wrap gap-1 mb-2">
+                    <div className="flex flex-wrap gap-1 mb-3">
                       {categories.slice(0, 3).map((cat: string) => (
                         <Badge 
                           key={cat} 
@@ -155,15 +155,15 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     </div>
                   </div>
 
-                  {/* Fixed layout for desktop to prevent overlapping */}
-                  <div className="flex flex-col xl:flex-row gap-2 xl:gap-6 text-sm shrink-0">
-                    <div className="flex items-center space-x-2 min-w-0 xl:min-w-[140px]">
+                  {/* Improved layout with proper spacing and no overlapping */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                    <div className="flex items-center space-x-2 min-w-0">
                       <Calendar className="h-4 w-4 text-black/60 shrink-0" />
                       <span className="font-medium text-black/80 truncate">{launchDate}</span>
                     </div>
                     
                     {fdvAmount && (
-                      <div className="flex items-center space-x-2 min-w-0 xl:min-w-[120px]">
+                      <div className="flex items-center space-x-2 min-w-0">
                         <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
                         <span className="font-medium text-black/80 truncate" title={fdvAmount}>
                           {truncateMiddle(fdvAmount, 15)}
@@ -172,14 +172,14 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     )}
 
                     {backers.length > 0 && (
-                      <div className="flex items-center space-x-2 min-w-0 xl:flex-1">
+                      <div className="flex items-center space-x-2 min-w-0 sm:col-span-2 lg:col-span-1">
                         <Users className="h-4 w-4 text-black/60 shrink-0" />
                         <div className="flex items-center gap-1 min-w-0">
                           <span className="font-medium text-black/70 whitespace-nowrap">
                             {backers.length} backer{backers.length > 1 ? 's' : ''}
                           </span>
                           {backers.length > 0 && (
-                            <span className="text-black/50 truncate max-w-[120px] xl:max-w-[200px]" title={backers.map(getBackerName).join(', ')}>
+                            <span className="text-black/50 truncate" title={backers.map(getBackerName).join(', ')}>
                               ({backers.slice(0, 2).map(getBackerName).join(', ')}{backers.length > 2 ? '...' : ''})
                             </span>
                           )}
