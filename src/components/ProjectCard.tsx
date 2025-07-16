@@ -1,6 +1,8 @@
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -21,7 +23,11 @@ interface Project {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
-  backers?: string[];
+  backers?: Array<{
+    name: string;
+    logo?: string;
+    link?: string;
+  }> | string[];
 }
 
 interface ProjectCardProps {
@@ -61,7 +67,15 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   const launchDate = project.sale_date || project.launch_date || project.dueDate || 'TBD';
   const fdvAmount = project.size_fdv || project.expected_fdv;
   const categories = Array.isArray(project.category) ? project.category : [project.category];
-  const backers = project.backers || project.team || [];
+  
+  // Handle both old format (string[]) and new format (object[])
+  const backers = project.backers || [];
+  const normalizedBackers = backers.map(backer => {
+    if (typeof backer === 'string') {
+      return { name: backer };
+    }
+    return backer;
+  });
 
   return (
     <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group">
@@ -114,14 +128,42 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
           )}
 
           {/* Backers */}
-          {backers.length > 0 && (
-            <div className="flex items-center space-x-3 text-sm">
-              <Users className="h-4 w-4 text-black/60 flex-shrink-0" />
-              <span className="font-semibold text-black">Backers:</span>
-              <span className="text-black/70 font-medium line-clamp-1">
-                {backers.slice(0, 2).join(', ')}
-                {backers.length > 2 && ` +${backers.length - 2} more`}
-              </span>
+          {normalizedBackers.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 text-sm">
+                <Users className="h-4 w-4 text-black/60 flex-shrink-0" />
+                <span className="font-semibold text-black">Backers:</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {normalizedBackers.slice(0, 3).map((backer, index) => (
+                  <Badge 
+                    key={`${backer.name}-${index}`}
+                    variant="outline" 
+                    className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6 flex items-center gap-1"
+                  >
+                    {backer.logo ? (
+                      <Avatar className="h-3 w-3">
+                        <AvatarImage src={backer.logo} alt={backer.name} />
+                        <AvatarFallback className="text-[8px] bg-black/10">
+                          {backer.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="h-3 w-3 rounded-full bg-black/10 flex items-center justify-center">
+                        <span className="text-[8px] font-medium text-black/60">
+                          {backer.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <span className="truncate max-w-[80px]">{backer.name}</span>
+                  </Badge>
+                ))}
+                {normalizedBackers.length > 3 && (
+                  <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6">
+                    +{normalizedBackers.length - 3}
+                  </Badge>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
