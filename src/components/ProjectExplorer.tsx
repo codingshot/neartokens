@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CalendarView } from '@/components/CalendarView';
@@ -7,7 +6,29 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Project } from '@/types/project';
+
+interface Project {
+  id: number | string;
+  name: string;
+  category: string | string[];
+  status: 'upcoming' | 'completed';
+  progress?: number;
+  nextMilestone?: string;
+  dueDate?: string;
+  team?: string[];
+  dependencies?: string[];
+  type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
+  sale_date?: string;
+  launch_date?: string;
+  logo?: string;
+  backers?: (string | {
+    name: string;
+    logo?: string;
+    link?: string;
+  })[];
+}
 
 interface ProjectExplorerProps {
   projects: Project[];

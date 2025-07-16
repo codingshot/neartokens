@@ -22,11 +22,11 @@ interface Project {
   sale_date?: string;
   launch_date?: string;
   logo?: string;
-  backers?: Array<{
+  backers?: (string | {
     name: string;
     logo?: string;
     link?: string;
-  }> | string[];
+  })[];
 }
 
 interface ProjectCardProps {
@@ -80,8 +80,8 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   });
 
   return (
-    <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group">
-      <Link to={`/project/${project.id}`} className="block">
+    <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group flex flex-col h-full">
+      <Link to={`/project/${project.id}`} className="flex flex-col flex-1">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2 flex-1">
@@ -119,7 +119,7 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex-1">
           {/* Description */}
           {project.description && (
             <p className="text-sm text-black/70 font-medium line-clamp-2 leading-relaxed">
@@ -203,7 +203,8 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
         </div>
       )}
       
-      <div className="px-6 pb-6">
+      {/* View Details Button - Always at bottom */}
+      <div className="px-6 pb-6 mt-auto">
         <Link to={`/project/${project.id}`}>
           <Button 
             variant="outline" 
