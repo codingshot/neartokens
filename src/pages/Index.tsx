@@ -180,7 +180,6 @@ export default function Index() {
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
                 <SelectItem value="DeFi">DeFi</SelectItem>
                 <SelectItem value="AI">AI</SelectItem>
                 <SelectItem value="Social">Social</SelectItem>
