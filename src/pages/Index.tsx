@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +93,7 @@ export default function Index() {
 
   const projects = tokensData ? [...tokensData.token_sales, ...tokensData.token_listings] : [];
   
-  // Get all unique backers for the filter
+  // Get all unique backers for the filter - improved logic
   const allBackers = React.useMemo(() => {
     const backerSet = new Set<string>();
     projects.forEach(project => {
@@ -102,6 +101,8 @@ export default function Index() {
         project.backers.forEach(backer => {
           if (typeof backer === 'string') {
             backerSet.add(backer);
+          } else if (typeof backer === 'object' && backer.name) {
+            backerSet.add(backer.name);
           }
         });
       }
@@ -125,7 +126,17 @@ export default function Index() {
   const filteredProjects = projects.filter(project => {
     const searchMatch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
     const categoryMatch = !selectedCategory || (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory);
-    const backersMatch = selectedBackers.length === 0 || (project.backers && Array.isArray(project.backers) && project.backers.some(backer => selectedBackers.includes(backer)));
+    
+    // Fixed backers filtering logic
+    const backersMatch = selectedBackers.length === 0 || (
+      project.backers && 
+      Array.isArray(project.backers) && 
+      project.backers.some(backer => {
+        const backerName = typeof backer === 'string' ? backer : backer?.name;
+        return backerName && selectedBackers.includes(backerName);
+      })
+    );
+    
     return searchMatch && categoryMatch && backersMatch;
   });
 
