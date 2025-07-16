@@ -10,7 +10,11 @@ export interface Project {
   sale_date?: string;
   launch_date?: string;
   logo?: string;
-  backers?: string[];
+  backers?: (string | {
+    name: string;
+    logo?: string;
+    link?: string;
+  })[];
 }
 
 export interface TokensData {
