@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Calendar, Users, GitBranch, ExternalLink, Github, Globe, MessageCircle, FileText } from 'lucide-react';
 import { MilestoneTimeline } from '@/components/MilestoneTimeline';
+import { TwitterFeed } from '@/components/TwitterFeed';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useGitHubData } from '@/hooks/useGitHubData';
 import { useQuery } from '@tanstack/react-query';
@@ -383,10 +384,11 @@ const ProjectDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <Tabs defaultValue={initialTab} className="space-y-6 md:space-y-8">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-[500px] bg-white border border-black/10">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:w-[600px] bg-white border border-black/10">
             <TabsTrigger value="overview" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="milestones" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Milestones</TabsTrigger>
             <TabsTrigger value="team" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Team</TabsTrigger>
+            <TabsTrigger value="social" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Social</TabsTrigger>
             <TabsTrigger value="updates" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Updates</TabsTrigger>
           </TabsList>
 
@@ -629,6 +631,72 @@ const ProjectDetail = () => {
                         </div>
                         <ExternalLink className="h-4 w-4 text-black/40" />
                       </a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="social">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Twitter Feed */}
+              {displayProject.twitter && (
+                <TwitterFeed twitterHandle={displayProject.twitter} />
+              )}
+              
+              {/* Social Links */}
+              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-black">Social Media</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {displayProject.twitter && displayProject.twitter !== 'TBD' && (
+                      <a 
+                        href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-3 p-4 bg-[#1da1f2]/5 rounded-lg hover:bg-[#1da1f2]/10 transition-all hover:scale-[1.02] border border-[#1da1f2]/20"
+                      >
+                        <div className="w-12 h-12 bg-[#1da1f2]/20 rounded-full flex items-center justify-center">
+                          <MessageCircle className="h-6 w-6 text-[#1da1f2]" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-black">Twitter</div>
+                          <div className="text-sm text-black/60">
+                            @{displayProject.twitter.replace('@', '').replace('https://twitter.com/', '')}
+                          </div>
+                        </div>
+                        <ExternalLink className="h-5 w-5 text-black/40" />
+                      </a>
+                    )}
+                    
+                    {displayProject.telegram && displayProject.telegram !== 'TBD' && (
+                      <a 
+                        href={displayProject.telegram.startsWith('http') ? displayProject.telegram : `https://t.me/${displayProject.telegram.replace('@', '')}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-3 p-4 bg-[#0088cc]/5 rounded-lg hover:bg-[#0088cc]/10 transition-all hover:scale-[1.02] border border-[#0088cc]/20"
+                      >
+                        <div className="w-12 h-12 bg-[#0088cc]/20 rounded-full flex items-center justify-center">
+                          <MessageCircle className="h-6 w-6 text-[#0088cc]" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-black">Telegram</div>
+                          <div className="text-sm text-black/60">
+                            @{displayProject.telegram.replace('@', '').replace('https://t.me/', '')}
+                          </div>
+                        </div>
+                        <ExternalLink className="h-5 w-5 text-black/40" />
+                      </a>
+                    )}
+                    
+                    {(!displayProject.twitter || displayProject.twitter === 'TBD') && (!displayProject.telegram || displayProject.telegram === 'TBD') && (
+                      <div className="text-center py-8 text-black/60">
+                        <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p className="font-medium">No social media links available</p>
+                      </div>
                     )}
                   </div>
                 </CardContent>

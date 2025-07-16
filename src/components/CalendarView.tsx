@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +15,7 @@ interface CalendarViewProps {
 }
 
 export const CalendarView = ({ projects }: CalendarViewProps) => {
-  const [viewMode, setViewMode] = useState<'calendar' | 'condensed'>('condensed'); // Changed default to list view
+  const [viewMode, setViewMode] = useState<'calendar' | 'condensed'>('condensed');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedMilestones, setSelectedMilestones] = useState<any[]>([]);
   const [projectFilter, setProjectFilter] = useState<string>('all');
@@ -24,8 +25,10 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const projectNames = projects.map(project => project.name);
-    setAvailableProjects(projectNames);
+    if (projects && projects.length > 0) {
+      const projectNames = projects.map(project => project.name);
+      setAvailableProjects(projectNames);
+    }
   }, [projects]);
 
   const formatDate = (dateString: string) => {
@@ -61,11 +64,18 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
     if (!date) return [];
 
     const formattedDate = date.toISOString().split('T')[0];
-    return getFilteredMilestones().filter(milestone => milestone.dueDate.split('T')[0] === formattedDate);
+    return getFilteredMilestones().filter(milestone => milestone.dueDate && milestone.dueDate.split('T')[0] === formattedDate);
   };
 
   const getFilteredMilestones = () => {
+    if (!projects || projects.length === 0) return [];
+
     let filtered = projects.flatMap(project => {
+      // Add null check for milestones
+      if (!project.milestones || !Array.isArray(project.milestones)) {
+        return [];
+      }
+      
       return project.milestones.map(milestone => ({
         ...milestone,
         projectName: project.name,
@@ -102,7 +112,7 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
           break;
         }
         case 'overdue':
-          filtered = filtered.filter(milestone => isPastDue(milestone.dueDate) && milestone.status !== 'completed');
+          filtered = filtered.filter(milestone => milestone.dueDate && isPastDue(milestone.dueDate) && milestone.status !== 'completed');
           break;
         default:
           break;
@@ -110,6 +120,7 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
 
       if (startDate && endDate) {
         filtered = filtered.filter(milestone => {
+          if (!milestone.dueDate) return false;
           const milestoneDate = new Date(milestone.dueDate);
           return milestoneDate >= startDate! && milestoneDate <= endDate!;
         });
@@ -180,7 +191,6 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
                 </Button>
               </div>
               
-              {/* Mobile: 2 columns, Desktop: 3 columns */}
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                 <Select value={projectFilter} onValueChange={setProjectFilter}>
                   <SelectTrigger className="text-xs h-9">
@@ -221,7 +231,6 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
                 </Select>
               </div>
               
-              {/* Results count */}
               <div className="flex items-center text-sm text-black/60 font-medium">
                 <span>{getFilteredMilestones().length} milestones</span>
               </div>
@@ -230,7 +239,6 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
 
           {viewMode === 'calendar' ? (
             <div className="space-y-6">
-              {/* Calendar Component */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                   <div className="bg-[#f2f1e9] rounded-lg p-4">
@@ -259,7 +267,6 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
                   </div>
                 </div>
 
-                {/* Selected Date Milestones */}
                 <div className="space-y-4">
                   <div className="bg-[#f2f1e9] rounded-lg p-4">
                     <h3 className="font-semibold text-black mb-3">
@@ -292,11 +299,10 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Condensed Timeline View */}
               <div className="space-y-4">
                 {getFilteredMilestones().length > 0 ? (
                   getFilteredMilestones()
-                    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+                    .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime())
                     .map((milestone, index) => (
                       <div key={index} className="bg-[#f2f1e9] rounded-lg p-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -319,8 +325,8 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-black/60">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4" />
-                                <span className="font-medium">Due: {formatDate(milestone.dueDate)}</span>
-                                {isPastDue(milestone.dueDate) && milestone.status !== 'completed' && (
+                                <span className="font-medium">Due: {milestone.dueDate ? formatDate(milestone.dueDate) : 'TBD'}</span>
+                                {milestone.dueDate && isPastDue(milestone.dueDate) && milestone.status !== 'completed' && (
                                   <Badge variant="outline" className="bg-[#ff7966]/10 text-black border-[#ff7966]/30 font-medium">
                                     Overdue
                                   </Badge>
