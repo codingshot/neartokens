@@ -107,12 +107,6 @@ export default function Index() {
                   <span>Submit Token</span>
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm">
-                <a href="https://www.near.org/blog/token-season-on-near" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2">
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Blog</span>
-                </a>
-              </Button>
             </div>
           </div>
         </div>
@@ -156,11 +150,16 @@ export default function Index() {
 
       {/* Upcoming Tokens Ticker */}
       <section className="bg-[#00ec97] py-3 overflow-hidden relative">
-        <div className="ticker-wrapper">
-          <div className="ticker-content">
-            {upcomingProjects.concat(upcomingProjects).map((project, index) => (
-              <span key={`${project.id}-${index}`} className="ticker-item text-black font-semibold text-lg">
-                {project.name} ({project.symbol || 'TBD'}) - {project.status}
+        <div className="whitespace-nowrap">
+          <div className="inline-block animate-scroll">
+            {upcomingProjects.map((project, index) => (
+              <span key={`${project.id}-${index}`} className="text-black font-semibold text-lg mr-8">
+                {project.name} ({project.symbol || 'TBD'}) - {project.sale_date || project.launch_date || 'TBD'} 💸
+              </span>
+            ))}
+            {upcomingProjects.map((project, index) => (
+              <span key={`${project.id}-duplicate-${index}`} className="text-black font-semibold text-lg mr-8">
+                {project.name} ({project.symbol || 'TBD'}) - {project.sale_date || project.launch_date || 'TBD'} 💸
               </span>
             ))}
           </div>

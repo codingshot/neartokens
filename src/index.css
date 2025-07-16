@@ -1,3 +1,4 @@
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
@@ -67,12 +68,12 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
 .animate-scroll {
-  animation: scroll 60s linear infinite;
+  animation: scroll 30s linear infinite;
 }
 
 .animate-scroll:hover {
