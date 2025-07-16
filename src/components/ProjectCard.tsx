@@ -1,4 +1,3 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -173,35 +172,33 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
               </div>
             </div>
           )}
+
+          {/* Categories - Now positioned after launch/backers info */}
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {categories.slice(0, 4).map((cat: string) => (
+                <Badge 
+                  key={cat} 
+                  variant="outline" 
+                  className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10 transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCategoryClick?.(cat);
+                  }}
+                >
+                  {cat}
+                </Badge>
+              ))}
+              {categories.length > 4 && (
+                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
+                  +{categories.length - 4}
+                </Badge>
+              )}
+            </div>
+          )}
         </CardContent>
       </Link>
-
-      {/* Categories - Outside of Link to handle clicks */}
-      {categories.length > 0 && (
-        <div className="px-6 pb-2">
-          <div className="flex flex-wrap gap-1">
-            {categories.slice(0, 4).map((cat: string) => (
-              <Badge 
-                key={cat} 
-                variant="outline" 
-                className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10 transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onCategoryClick?.(cat);
-                }}
-              >
-                {cat}
-              </Badge>
-            ))}
-            {categories.length > 4 && (
-              <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
-                +{categories.length - 4}
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
       
       {/* View Details Button - Always at bottom */}
       <div className="px-6 pb-6 mt-auto">
