@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
-  GitBranch, 
+  Coins, 
   Calendar, 
   BarChart3, 
   Users, 
@@ -28,19 +28,19 @@ import { useEffect, useState } from 'react';
 
 const Landing = () => {
   const [stats, setStats] = useState([
-    { value: "0", label: "Active Projects", icon: GitBranch },
-    { value: "0", label: "Milestones Tracked", icon: CheckCircle },
-    { value: "0%", label: "On-time Delivery", icon: Clock },
-    { value: "Real-time", label: "Updates", icon: TrendingUp }
+    { value: "0", label: "Token Projects", icon: Coins },
+    { value: "0", label: "Token Sales", icon: CheckCircle },
+    { value: "0", label: "Token Listings", icon: Clock },
+    { value: "$0", label: "Combined FDV", icon: TrendingUp }
   ]);
 
-  // Fetch real project data
-  const { data: projectData } = useQuery({
-    queryKey: ['projects-landing'],
+  // Fetch real token data
+  const { data: tokenData } = useQuery({
+    queryKey: ['tokens-landing'],
     queryFn: async () => {
-      const response = await fetch('/data/projects.json');
+      const response = await fetch('/data/tokens.json');
       if (!response.ok) {
-        throw new Error('Failed to fetch project data');
+        throw new Error('Failed to fetch token data');
       }
       return response.json();
     },
@@ -48,56 +48,51 @@ const Landing = () => {
 
   // Update stats with real data
   useEffect(() => {
-    if (projectData?.projects) {
-      const projects = projectData.projects;
-      const totalProjects = projects.length;
-      const totalMilestones = projects.reduce((acc: number, project: any) => 
-        acc + (project.milestones?.length || 0), 0
-      );
-      const completedMilestones = projects.reduce((acc: number, project: any) => 
-        acc + (project.milestones?.filter((m: any) => m.status === 'completed').length || 0), 0
-      );
-      const onTimeRate = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+    if (tokenData) {
+      const totalProjects = tokenData.statistics.total_projects;
+      const tokenSales = tokenData.statistics.total_token_sales;
+      const tokenListings = tokenData.statistics.total_token_listings;
+      const estimatedFDV = `$${Object.keys(tokenData.statistics.fdv_ranges).length * 25}M+`;
 
       setStats([
-        { value: `${totalProjects}`, label: "Active Projects", icon: GitBranch },
-        { value: `${totalMilestones}`, label: "Milestones Tracked", icon: CheckCircle },
-        { value: `${onTimeRate}%`, label: "Completion Rate", icon: Clock },
-        { value: "Real-time", label: "Updates", icon: TrendingUp }
+        { value: `${totalProjects}`, label: "Token Projects", icon: Coins },
+        { value: `${tokenSales}`, label: "Token Sales", icon: CheckCircle },
+        { value: `${tokenListings}`, label: "Token Listings", icon: Clock },
+        { value: estimatedFDV, label: "Combined FDV", icon: TrendingUp }
       ]);
     }
-  }, [projectData]);
+  }, [tokenData]);
 
   const features = [
     {
-      icon: GitBranch,
-      title: "Project Tracking",
-      description: "Monitor NEAR ecosystem projects with real-time status updates and progress tracking across all development stages."
+      icon: Coins,
+      title: "Token Launch Tracking",
+      description: "Monitor NEAR ecosystem token sales and listings with real-time updates on launch schedules and project progress."
     },
     {
       icon: Calendar,
-      title: "Milestone Management",
-      description: "Track project milestones, deadlines, and deliverables with automated notifications and timeline visualization."
+      title: "Launch Calendar",
+      description: "Interactive calendar showing upcoming token sales, listings, and key dates across the NEAR ecosystem."
     },
     {
       icon: BarChart3,
-      title: "Analytics Dashboard",
-      description: "Comprehensive analytics with project health metrics, completion rates, and ecosystem-wide performance insights."
+      title: "FDV Analytics",
+      description: "Track fully diluted valuations, market metrics, and funding rounds across all NEAR token projects."
     },
     {
       icon: Users,
-      title: "Team Collaboration",
-      description: "Coordinate between teams, track dependencies, and manage cross-project relationships within the NEAR ecosystem."
+      title: "Backer Network",
+      description: "See which VCs and institutions are backing projects, track investment patterns and partnerships."
     },
     {
       icon: Zap,
-      title: "Real-time Updates",
-      description: "Get instant notifications on project status changes, milestone completions, and critical delays."
+      title: "Intents Launchpad",
+      description: "Integration with NEAR's Intents-based launchpad for seamless token launches and cross-chain functionality."
     },
     {
       icon: Shield,
-      title: "GitHub Integration",
-      description: "Seamlessly connect with GitHub repositories to automatically sync project data and development progress."
+      title: "Due Diligence",
+      description: "Comprehensive project profiles with tokenomics, team info, partnerships, and key metrics."
     }
   ];
 
@@ -108,9 +103,9 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-[#00ec97] to-[#17d9d4] rounded-lg flex items-center justify-center">
-              <GitBranch className="h-6 w-6 text-white" />
+              <Coins className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-black">NEAR Milestones</h1>
+            <h1 className="text-2xl font-bold text-black">NEAR Tokens</h1>
           </div>
           <Link to="/">
             <Button className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-semibold">
@@ -130,22 +125,22 @@ const Landing = () => {
           <h1 className="text-5xl md:text-7xl font-bold text-black mb-6 leading-tight">
             Track Every
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ec97] to-[#17d9d4]">
-              {" "}Milestone
+              {" "}Token Launch
             </span>
           </h1>
           <p className="text-xl text-black/70 max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
-            Comprehensive project management and milestone tracking for the NEAR Protocol ecosystem. 
-            Monitor progress, manage dependencies, and ensure on-time delivery across all ecosystem projects.
+            Comprehensive token launch tracking for the NEAR Protocol ecosystem. 
+            Monitor upcoming sales, listings, FDV metrics, and launch schedules across all NEAR token projects.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/">
               <Button size="lg" className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-semibold px-8 py-4 text-lg">
-                Get Started
+                Explore Tokens
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Button variant="outline" size="lg" className="border-black/20 text-black hover:bg-black/5 font-semibold px-8 py-4 text-lg">
-              View Demo
+              View Calendar
             </Button>
           </div>
         </div>
@@ -174,7 +169,7 @@ const Landing = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-black mb-4">Powerful Features</h2>
             <p className="text-xl text-black/70 max-w-2xl mx-auto font-medium">
-              Everything you need to manage and track NEAR ecosystem projects efficiently
+              Everything you need to track and analyze NEAR ecosystem token launches
             </p>
           </div>
           <div className="relative">
@@ -213,9 +208,9 @@ const Landing = () => {
       <section className="py-20 px-6 bg-white/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-black mb-4">Built for NEAR Ecosystem</h2>
+            <h2 className="text-4xl font-bold text-black mb-4">Built for Token Season 2025</h2>
             <p className="text-xl text-black/70 max-w-2xl mx-auto font-medium">
-              Designed specifically for the unique needs of NEAR Protocol projects and teams
+              Designed specifically for the upcoming wave of NEAR Protocol token launches
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -225,8 +220,8 @@ const Landing = () => {
                   <CheckCircle className="h-5 w-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-black mb-2">Grant Management</h3>
-                  <p className="text-black/70 font-medium">Track grant milestones and deliverables with automated reporting</p>
+                  <h3 className="text-xl font-semibold text-black mb-2">Launch Schedule</h3>
+                  <p className="text-black/70 font-medium">Track Q3-Q4 2025 token sales and listings across AI, DeFi, and Wallet categories</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -234,8 +229,8 @@ const Landing = () => {
                   <AlertTriangle className="h-5 w-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-black mb-2">Risk Management</h3>
-                  <p className="text-black/70 font-medium">Identify delays and risks early with predictive analytics</p>
+                  <h3 className="text-xl font-semibold text-black mb-2">Investment Tracking</h3>
+                  <p className="text-black/70 font-medium">Monitor FDV ranges, backer networks, and funding rounds for informed decisions</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -243,18 +238,18 @@ const Landing = () => {
                   <TrendingUp className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-black mb-2">Ecosystem Insights</h3>
-                  <p className="text-black/70 font-medium">Get comprehensive analytics on ecosystem health and growth</p>
+                  <h3 className="text-xl font-semibold text-black mb-2">Market Intelligence</h3>
+                  <p className="text-black/70 font-medium">Get insights on ecosystem health, category trends, and launch performance</p>
                 </div>
               </div>
             </div>
             <div className="bg-gradient-to-br from-[#00ec97]/5 to-[#17d9d4]/5 rounded-2xl p-8 border border-black/10">
               <div className="text-center">
                 <div className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00ec97] to-[#17d9d4] mb-4">
-                  {stats[2].value}
+                  12
                 </div>
-                <div className="text-xl font-semibold text-black mb-2">Average Project Completion Rate</div>
-                <div className="text-black/70 font-medium">Projects using NEAR Milestones deliver successfully</div>
+                <div className="text-xl font-semibold text-black mb-2">Total Token Projects</div>
+                <div className="text-black/70 font-medium">Launching across NEAR ecosystem in 2025</div>
               </div>
             </div>
           </div>
@@ -264,13 +259,13 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-black mb-6">Ready to Get Started?</h2>
+          <h2 className="text-4xl font-bold text-black mb-6">Ready to Track Token Launches?</h2>
           <p className="text-xl text-black/70 max-w-2xl mx-auto mb-10 font-medium">
-            Join the NEAR ecosystem teams already using Milestones to track their projects
+            Join the community tracking the next wave of NEAR ecosystem tokens
           </p>
           <Link to="/">
             <Button size="lg" className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-semibold px-8 py-4 text-lg">
-              Launch NEAR Milestones
+              Launch NEAR Tokens
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -282,12 +277,12 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="w-8 h-8 bg-gradient-to-br from-[#00ec97] to-[#17d9d4] rounded-lg flex items-center justify-center">
-              <GitBranch className="h-5 w-5 text-white" />
+              <Coins className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-black">NEAR Milestones</span>
+            <span className="text-xl font-bold text-black">NEAR Tokens</span>
           </div>
           <p className="text-black/60 font-medium mb-6">
-            Empowering the NEAR Protocol ecosystem with better project management
+            Empowering the NEAR Protocol ecosystem with token launch intelligence
           </p>
           <div className="flex justify-center space-x-6 text-sm">
             <Link to="/" className="text-black/60 hover:text-[#00ec97] font-medium transition-colors">Dashboard</Link>

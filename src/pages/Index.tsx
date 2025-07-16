@@ -1,73 +1,72 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, GitBranch, AlertTriangle, TrendingUp } from 'lucide-react';
-import { ProjectCard } from '@/components/ProjectCard';
-import { MilestoneTimeline } from '@/components/MilestoneTimeline';
-import { DependencyGraph } from '@/components/DependencyGraph';
+import { CalendarDays, Coins, DollarSign, TrendingUp, Zap } from 'lucide-react';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
-import { GitHubIntegration } from '@/components/GitHubIntegration';
 import { CalendarView } from '@/components/CalendarView';
-import { DelaysView } from '@/components/DelaysView';
-import { useGitHubData } from '@/hooks/useGitHubData';
-import { ProjectStatusChart } from '@/components/ProjectStatusChart';
-import { MilestoneProgressChart } from '@/components/MilestoneProgressChart';
-import { AnalyticsOverview } from '@/components/AnalyticsOverview';
+import { useQuery } from '@tanstack/react-query';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { projects: githubProjects, loading, error } = useGitHubData();
   const isMobile = useIsMobile();
 
-  // Use GitHub data if available, otherwise fallback to mock data
-  const recentProjects = githubProjects.length > 0 ? githubProjects : [
-    {
-      id: "omnibridge",
-      name: "Omnibridge",
-      category: "Infrastructure",
-      status: "on-track" as const,
-      progress: 85,
-      nextMilestone: "Mainnet Beta",
-      dueDate: "2024-08-15",
-      team: ["Alice Chen", "Bob Rodriguez"],
-      dependencies: ["NEAR Protocol Core"]
+  // Fetch token data
+  const { data: tokenData, loading, error } = useQuery({
+    queryKey: ['tokens'],
+    queryFn: async () => {
+      const response = await fetch('/data/tokens.json');
+      if (!response.ok) {
+        throw new Error('Failed to fetch token data');
+      }
+      return response.json();
     },
-    {
-      id: "agent-hub-sdk",
-      name: "Agent Hub SDK",
-      category: "SDK",
-      status: "at-risk" as const,
-      progress: 62,
-      nextMilestone: "API Documentation",
-      dueDate: "2024-07-28",
-      team: ["Carol Kim", "David Park"],
-      dependencies: ["NEAR Intents", "Lucid Wallet"]
-    },
-    {
-      id: "meteor-wallet",
-      name: "Meteor Wallet",
-      category: "Grantee",
-      status: "delayed" as const,
-      progress: 45,
-      nextMilestone: "Security Audit",
-      dueDate: "2024-07-20",
-      team: ["Eve Thompson", "Frank Liu"],
-      dependencies: []
-    }
-  ];
+  });
 
-  // Update ecosystem stats based on actual data
-  const ecosystemStats = {
-    totalProjects: recentProjects.length,
-    onTrackProjects: recentProjects.filter(p => p.status === 'on-track').length,
-    atRiskProjects: recentProjects.filter(p => p.status === 'at-risk').length,
-    delayedProjects: recentProjects.filter(p => p.status === 'delayed').length,
-    upcomingMilestones: recentProjects.filter(p => new Date(p.dueDate) > new Date()).length,
-    completionRate: Math.round(recentProjects.reduce((acc, p) => acc + p.progress, 0) / recentProjects.length)
+  // Combine token sales and listings for unified view
+  const allProjects = tokenData ? [
+    ...tokenData.token_sales.map((token: any) => ({
+      ...token,
+      type: 'sale',
+      progress: token.status === 'upcoming' ? 25 : 100,
+      nextMilestone: `Token Sale - ${token.sale_date}`,
+      dueDate: token.sale_date,
+      team: token.backers || [],
+      dependencies: [],
+      status: token.status === 'upcoming' ? 'on-track' : 'completed'
+    })),
+    ...tokenData.token_listings.map((token: any) => ({
+      ...token,
+      type: 'listing',
+      progress: token.status === 'upcoming' ? 45 : 100,
+      nextMilestone: `Token Listing - ${token.launch_date}`,
+      dueDate: token.launch_date,
+      team: token.backers || [],
+      dependencies: [],
+      status: token.status === 'upcoming' ? 'on-track' : 'completed'
+    }))
+  ] : [];
+
+  // Calculate ecosystem stats
+  const ecosystemStats = tokenData ? {
+    totalProjects: tokenData.statistics.total_projects,
+    tokenSales: tokenData.statistics.total_token_sales,
+    tokenListings: tokenData.statistics.total_token_listings,
+    aiProjects: tokenData.statistics.categories.AI,
+    defiProjects: tokenData.statistics.categories.DeFi,
+    walletProjects: tokenData.statistics.categories.Wallet,
+    totalFDV: `$${Object.keys(tokenData.statistics.fdv_ranges).length * 25}M+`
+  } : {
+    totalProjects: 0,
+    tokenSales: 0,
+    tokenListings: 0,
+    aiProjects: 0,
+    defiProjects: 0,
+    walletProjects: 0,
+    totalFDV: '$0'
   };
 
   return (
@@ -77,22 +76,22 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
             <div className="text-center lg:text-left">
-              <h1 className="text-2xl sm:text-3xl font-semibold text-black mb-2">NEAR Milestones</h1>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-black mb-2">NEAR Tokens</h1>
               <p className="text-sm sm:text-base text-black/70 font-medium">
-                Milestone tracking and dependency management
-                {loading && <span className="ml-2 text-[#17d9d4]">(Loading GitHub data...)</span>}
+                Tokens on NEAR, launch schedule
+                {loading && <span className="ml-2 text-[#17d9d4]">(Loading token data...)</span>}
                 {error && <span className="ml-2 text-[#ff7966]">(Using cached data)</span>}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center lg:justify-end gap-2 sm:gap-4">
               <Badge variant="outline" className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 font-medium text-xs sm:text-sm">
-                {ecosystemStats.onTrackProjects} On Track
+                {ecosystemStats.tokenSales} Token Sales
               </Badge>
-              <Badge variant="outline" className="bg-[#ff7966]/10 text-black border-[#ff7966]/30 font-medium text-xs sm:text-sm">
-                {ecosystemStats.atRiskProjects} At Risk
+              <Badge variant="outline" className="bg-[#17d9d4]/10 text-black border-[#17d9d4]/30 font-medium text-xs sm:text-sm">
+                {ecosystemStats.tokenListings} Token Listings
               </Badge>
-              <Badge variant="outline" className="bg-[#ff7966]/20 text-black border-[#ff7966]/40 font-medium text-xs sm:text-sm">
-                {ecosystemStats.delayedProjects} Delayed
+              <Badge variant="outline" className="bg-[#9797ff]/10 text-black border-[#9797ff]/30 font-medium text-xs sm:text-sm">
+                {ecosystemStats.aiProjects} AI Projects
               </Badge>
             </div>
           </div>
@@ -106,29 +105,17 @@ const Index = () => {
             <TabsList className={`
               ${isMobile 
                 ? 'flex w-full min-w-max bg-white border border-black/10' 
-                : 'grid w-full grid-cols-7 lg:w-[800px] bg-white border border-black/10'
+                : 'grid w-full grid-cols-3 lg:w-[600px] bg-white border border-black/10'
               }
             `}>
-              <TabsTrigger value="dashboard" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
+              <TabsTrigger value="dashboard" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-4 sm:px-6">
                 Dashboard
               </TabsTrigger>
-              <TabsTrigger value="projects" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
+              <TabsTrigger value="projects" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-4 sm:px-6">
                 Projects
               </TabsTrigger>
-              <TabsTrigger value="calendar" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
+              <TabsTrigger value="calendar" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-4 sm:px-6">
                 Calendar
-              </TabsTrigger>
-              <TabsTrigger value="delays" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
-                Delays
-              </TabsTrigger>
-              <TabsTrigger value="dependencies" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
-                Dependencies
-              </TabsTrigger>
-              <TabsTrigger value="github" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
-                GitHub
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black whitespace-nowrap px-3 sm:px-4">
-                Analytics
               </TabsTrigger>
             </TabsList>
           </div>
@@ -139,108 +126,116 @@ const Index = () => {
               <Card className="bg-white border-black/10 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                   <CardTitle className="text-sm font-semibold text-black">Total Projects</CardTitle>
-                  <GitBranch className="h-5 w-5 text-black/60" />
+                  <Coins className="h-5 w-5 text-black/60" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-semibold text-black">{ecosystemStats.totalProjects}</div>
-                  <p className="text-sm text-black/60 font-medium mt-1">Active ecosystem projects</p>
+                  <p className="text-sm text-black/60 font-medium mt-1">Token launches & listings</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-black/10 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold text-black">Upcoming Milestones</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-black">Combined FDV</CardTitle>
+                  <DollarSign className="h-5 w-5 text-black/60" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-semibold text-black">{ecosystemStats.totalFDV}</div>
+                  <p className="text-sm text-black/60 font-medium mt-1">Estimated market value</p>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white border-black/10 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-black">Upcoming Sales</CardTitle>
                   <CalendarDays className="h-5 w-5 text-black/60" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-semibold text-black">{ecosystemStats.upcomingMilestones}</div>
-                  <p className="text-sm text-black/60 font-medium mt-1">Due in next 30 days</p>
+                  <div className="text-3xl font-semibold text-[#00ec97]">{ecosystemStats.tokenSales}</div>
+                  <p className="text-sm text-black/60 font-medium mt-1">Q3-Q4 2025 schedule</p>
                 </CardContent>
               </Card>
 
               <Card className="bg-white border-black/10 shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold text-black">At Risk</CardTitle>
-                  <AlertTriangle className="h-5 w-5 text-[#ff7966]" />
+                  <CardTitle className="text-sm font-semibold text-black">AI Category</CardTitle>
+                  <Zap className="h-5 w-5 text-[#17d9d4]" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-semibold text-[#ff7966]">{ecosystemStats.atRiskProjects}</div>
-                  <p className="text-sm text-black/60 font-medium mt-1">Projects needing attention</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-black/10 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold text-black">Completion Rate</CardTitle>
-                  <TrendingUp className="h-5 w-5 text-[#00ec97]" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-semibold text-[#00ec97]">{ecosystemStats.completionRate}%</div>
-                  <Progress value={ecosystemStats.completionRate} className="mt-3 h-2" />
+                  <div className="text-3xl font-semibold text-[#17d9d4]">{ecosystemStats.aiProjects}</div>
+                  <p className="text-sm text-black/60 font-medium mt-1">Leading sector</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Recent Projects */}
+            {/* Featured Projects */}
             <Card className="bg-white border-black/10 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Recent Project Updates</CardTitle>
+                <CardTitle className="text-xl font-semibold text-black">Featured Token Launches</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {recentProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {allProjects.slice(0, 6).map((project) => (
+                    <div key={project.id} className="p-4 border border-black/10 rounded-lg bg-[#f2f1e9]">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-black">{project.name}</h3>
+                          <p className="text-sm text-black/60 font-medium">{project.symbol}</p>
+                        </div>
+                        <Badge 
+                          variant="outline" 
+                          className={`${project.type === 'sale' ? 'bg-[#00ec97]/10 border-[#00ec97]/30' : 'bg-[#17d9d4]/10 border-[#17d9d4]/30'} text-black font-medium`}
+                        >
+                          {project.type === 'sale' ? 'Sale' : 'Listing'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-black/70 font-medium mb-3 line-clamp-2">{project.description}</p>
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {project.category.slice(0, 2).map((cat: string) => (
+                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="text-sm text-black/60 font-medium">
+                        {project.type === 'sale' ? project.sale_date : project.launch_date}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Timeline Overview */}
+            {/* Market Overview */}
             <Card className="bg-white border-black/10 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Milestone Timeline</CardTitle>
+                <CardTitle className="text-xl font-semibold text-black">NEAR Ecosystem Health</CardTitle>
               </CardHeader>
               <CardContent>
-                <MilestoneTimeline projects={recentProjects} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-4 bg-[#f2f1e9] rounded-lg">
+                    <div className="text-2xl font-semibold text-[#00ec97] mb-2">{ecosystemStats.aiProjects}</div>
+                    <div className="text-sm text-black/60 font-medium">AI Projects</div>
+                  </div>
+                  <div className="text-center p-4 bg-[#f2f1e9] rounded-lg">
+                    <div className="text-2xl font-semibold text-[#17d9d4] mb-2">{ecosystemStats.defiProjects}</div>
+                    <div className="text-sm text-black/60 font-medium">DeFi Projects</div>
+                  </div>
+                  <div className="text-center p-4 bg-[#f2f1e9] rounded-lg">
+                    <div className="text-2xl font-semibold text-[#9797ff] mb-2">{ecosystemStats.walletProjects}</div>
+                    <div className="text-sm text-black/60 font-medium">Wallet Projects</div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="projects">
-            <ProjectExplorer projects={recentProjects} />
+            <ProjectExplorer projects={allProjects} />
           </TabsContent>
 
           <TabsContent value="calendar">
-            <CalendarView projects={recentProjects} />
-          </TabsContent>
-
-          <TabsContent value="delays">
-            <DelaysView projects={recentProjects} />
-          </TabsContent>
-
-          <TabsContent value="dependencies">
-            <Card className="bg-white border-black/10 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Ecosystem Dependencies</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DependencyGraph projects={recentProjects} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="github">
-            <GitHubIntegration />
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <div className="space-y-6">
-              <AnalyticsOverview projects={recentProjects} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ProjectStatusChart projects={recentProjects} />
-                <MilestoneProgressChart projects={recentProjects} />
-              </div>
-            </div>
+            <CalendarView projects={allProjects} />
           </TabsContent>
         </Tabs>
       </div>
