@@ -9,8 +9,6 @@ export interface Project {
   description?: string;
   sale_date?: string;
   launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
   logo?: string;
   backers?: string[];
 }

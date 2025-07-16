@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, DollarSign, Users } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Project {
@@ -21,8 +21,6 @@ interface Project {
   description?: string;
   sale_date?: string;
   launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
   logo?: string;
   backers?: Array<{
     name: string;
@@ -66,7 +64,6 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   };
 
   const launchDate = project.sale_date || project.launch_date || project.dueDate || 'TBD';
-  const fdvAmount = project.size_fdv || project.expected_fdv;
   const categories = Array.isArray(project.category) ? project.category : [project.category];
   
   // Handle both old format (string[]) and new format (object[])
@@ -136,15 +133,6 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
             <span className="font-semibold text-black">Launch:</span>
             <span className="text-black/80 font-medium">{launchDate}</span>
           </div>
-
-          {/* FDV */}
-          {fdvAmount && (
-            <div className="flex items-center space-x-3 text-sm">
-              <DollarSign className="h-4 w-4 text-black/60 flex-shrink-0" />
-              <span className="font-semibold text-black">FDV:</span>
-              <span className="text-black/80 font-medium">{fdvAmount}</span>
-            </div>
-          )}
 
           {/* Backers */}
           {normalizedBackers.length > 0 && (

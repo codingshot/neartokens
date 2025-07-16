@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
+import { ArrowLeft, Calendar, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 interface BackerData {
@@ -24,8 +25,6 @@ interface TokenData {
   type?: 'sale' | 'listing';
   sale_date?: string;
   launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
   logo?: string;
   backers?: (string | BackerData)[];
   social?: {
@@ -188,7 +187,6 @@ const ProjectDetail = () => {
 
   const categories = Array.isArray(project.category) ? project.category : [project.category];
   const launchDate = project.sale_date || project.launch_date;
-  const fdvAmount = project.size_fdv || project.expected_fdv;
 
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
@@ -241,25 +239,13 @@ const ProjectDetail = () => {
             </div>
 
             {/* Key Info */}
-            <div className={`grid grid-cols-1 ${hasSocialLinks ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 mb-4`}>
+            <div className={`grid grid-cols-1 ${hasSocialLinks ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-4 mb-4`}>
               {launchDate && (
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-5 w-5 text-black/60" />
                   <div>
                     <span className="font-semibold text-black">Launch Date:</span>
                     <p className="text-black/80">{launchDate}</p>
-                  </div>
-                </div>
-              )}
-              
-              {fdvAmount && (
-                <div className="flex items-center space-x-3">
-                  <DollarSign className="h-5 w-5 text-black/60" />
-                  <div>
-                    <span className="font-semibold text-black">
-                      {project.status === 'upcoming' ? 'Expected FDV:' : 'FDV:'}
-                    </span>
-                    <p className="text-black/80">{fdvAmount}</p>
                   </div>
                 </div>
               )}

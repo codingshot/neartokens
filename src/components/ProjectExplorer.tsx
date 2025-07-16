@@ -5,7 +5,7 @@ import { CalendarView } from '@/components/CalendarView';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, DollarSign, Users } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Project } from '@/types/project';
 
@@ -86,7 +86,6 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
       <div className="space-y-3">
         {sortedProjects.map((project) => {
           const launchDate = project.sale_date || project.launch_date || 'TBD';
-          const fdvAmount = project.size_fdv || project.expected_fdv;
           const categories = Array.isArray(project.category) ? project.category : [project.category];
           const backers = project.backers || [];
 
@@ -186,20 +185,11 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     </div>
 
                     {/* Desktop: Grid layout for project details to prevent overlap */}
-                    <div className="hidden sm:grid sm:grid-cols-1 lg:grid-cols-3 gap-2 text-sm">
+                    <div className="hidden sm:grid sm:grid-cols-1 lg:grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center space-x-2 min-w-0">
                         <Calendar className="h-4 w-4 text-black/60 shrink-0" />
                         <span className="font-medium text-black/80 truncate">{launchDate}</span>
                       </div>
-                      
-                      {fdvAmount && (
-                        <div className="flex items-center space-x-2 min-w-0">
-                          <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
-                          <span className="font-medium text-black/80 truncate" title={fdvAmount}>
-                            {truncateMiddle(fdvAmount, 15)}
-                          </span>
-                        </div>
-                      )}
 
                       {backers.length > 0 && (
                         <div className="flex items-center space-x-2 min-w-0">
@@ -224,15 +214,6 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                         <Calendar className="h-4 w-4 text-black/60 shrink-0" />
                         <span className="font-medium text-black/80 truncate">{launchDate}</span>
                       </div>
-                      
-                      {fdvAmount && (
-                        <div className="flex items-center space-x-2 min-w-0">
-                          <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
-                          <span className="font-medium text-black/80 truncate" title={fdvAmount}>
-                            {truncateMiddle(fdvAmount, 20)}
-                          </span>
-                        </div>
-                      )}
 
                       {backers.length > 0 && (
                         <div className="flex items-center space-x-2 min-w-0">
