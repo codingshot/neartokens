@@ -212,29 +212,42 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Upcoming Projects Ticker */}
+          {/* Upcoming Tokens Ticker */}
           {upcomingProjects.length > 0 && (
             <div className="bg-black/5 rounded-lg p-4 mb-6">
               <h3 className="text-sm font-semibold text-black mb-3 flex items-center">
                 <Clock className="h-4 w-4 mr-2" />
-                Upcoming Projects
+                Upcoming Tokens
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {upcomingProjects.map((project) => (
-                  <Link
-                    key={project.id}
-                    to={`/project/${project.id}`}
-                    className="hover:scale-105 transition-transform"
-                  >
-                    <Badge 
-                      variant="outline" 
-                      className="bg-white border-black/20 text-black hover:border-[#00ec97] hover:bg-[#00ec97]/5 cursor-pointer transition-all font-medium px-2 py-1 text-xs"
-                    >
-                      {project.name}
-                      {project.symbol && ` ($${project.symbol})`}
-                    </Badge>
-                  </Link>
-                ))}
+              <div className="overflow-x-auto">
+                <div className="flex gap-4 min-w-full">
+                  {upcomingProjects.map((project) => {
+                    const launchDate = project.sale_date || project.launch_date || 'TBD';
+                    const symbol = project.symbol || 'TBD';
+                    
+                    return (
+                      <Link
+                        key={project.id}
+                        to={`/project/${project.id}`}
+                        className="flex-shrink-0 bg-white rounded-lg border border-black/10 p-3 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 min-w-[200px]"
+                      >
+                        <div className="space-y-1">
+                          <h4 className="font-semibold text-sm text-black line-clamp-1">
+                            {project.name}
+                          </h4>
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-black/60 font-medium">
+                              ${symbol}
+                            </span>
+                            <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-1.5 py-0.5">
+                              {launchDate}
+                            </Badge>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
