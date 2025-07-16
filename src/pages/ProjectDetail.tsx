@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ArrowLeft, Calendar, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ProjectCard } from '@/components/ProjectCard';
+import { Footer } from '@/components/Footer';
 
 interface BackerData {
   name: string;
@@ -136,6 +139,38 @@ const ProjectDetail = () => {
       </div>
     );
   }
+
+  // Find related tokens based on category similarity
+  const getRelatedTokens = (currentProject: TokenData, allTokens: TokenData[]) => {
+    const currentCategories = Array.isArray(currentProject.category) 
+      ? currentProject.category 
+      : [currentProject.category];
+    
+    return allTokens
+      .filter(token => token.id !== currentProject.id)
+      .map(token => {
+        const tokenCategories = Array.isArray(token.category) 
+          ? token.category 
+          : [token.category];
+        
+        // Calculate similarity score based on common categories
+        const commonCategories = currentCategories.filter(cat => 
+          tokenCategories.some(tokenCat => 
+            tokenCat.toLowerCase() === cat.toLowerCase()
+          )
+        );
+        
+        return {
+          ...token,
+          similarity: commonCategories.length
+        };
+      })
+      .filter(token => token.similarity > 0)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 6); // Limit to 6 related tokens
+  };
+
+  const relatedTokens = getRelatedTokens(project, allProjects);
 
   // Check if data exists for each section
   const hasOverviewData = project.key_features?.length > 0 || project.token_utility;
@@ -448,7 +483,35 @@ const ProjectDetail = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Related Tokens Section */}
+        {relatedTokens.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-black mb-6">Related Tokens</h2>
+            <Carousel
+              opts={{
+                align: "start",
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {relatedTokens.map((token) => (
+                  <CarouselItem key={token.id} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1">
+                      <ProjectCard project={token} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
+        )}
       </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
