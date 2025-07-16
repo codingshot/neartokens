@@ -25,6 +25,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useEffect, useState } from 'react';
+import { calculateTokenStatistics } from '@/lib/utils';
 
 const Landing = () => {
   const [stats, setStats] = useState([
@@ -49,10 +50,11 @@ const Landing = () => {
   // Update stats with real data
   useEffect(() => {
     if (tokenData) {
-      const totalProjects = tokenData.statistics.total_projects;
-      const tokenSales = tokenData.statistics.total_token_sales;
-      const tokenListings = tokenData.statistics.total_token_listings;
-      const estimatedFDV = `$${Object.keys(tokenData.statistics.fdv_ranges).length * 25}M+`;
+      const statistics = calculateTokenStatistics(tokenData);
+      const totalProjects = statistics.total_projects;
+      const tokenSales = statistics.total_token_sales;
+      const tokenListings = statistics.total_token_listings;
+      const estimatedFDV = `$${Object.keys(statistics.fdv_ranges).length * 25}M+`;
 
       setStats([
         { value: `${totalProjects}`, label: "Token Projects", icon: Coins },

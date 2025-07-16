@@ -74,17 +74,18 @@ export interface TokenData {
       next_update: string;
     };
   };
-  statistics: {
-    total_token_sales: number;
-    total_token_listings: number;
-    total_projects: number;
-    categories: {
-      [key: string]: number;
-    };
-    fdv_ranges: {
-      [key: string]: number;
-    };
-  };
+  // Statistics are now calculated dynamically using calculateTokenStatistics function
+  // statistics?: {
+  //   total_token_sales: number;
+  //   total_token_listings: number;
+  //   total_projects: number;
+  //   categories: {
+  //     [key: string]: number;
+  //   };
+  //   fdv_ranges: {
+  //     [key: string]: number;
+  //   };
+  // };
   lastUpdate: string;
   version: string;
 }
