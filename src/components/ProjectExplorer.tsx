@@ -108,7 +108,38 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
           return (
             <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
               <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  {/* Project Logo */}
+                  <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                    {project.logo ? (
+                      <img 
+                        src={project.logo} 
+                        alt={`${project.name} logo`}
+                        className="w-12 h-12 rounded-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const fallback = parent.querySelector('.fallback-logo') as HTMLElement;
+                            if (fallback) {
+                              fallback.style.display = 'flex';
+                            }
+                          }
+                        }}
+                      />
+                    ) : null}
+                    <div 
+                      className="fallback-logo w-12 h-12 rounded-full bg-black/10 flex items-center justify-center"
+                      style={{ display: project.logo ? 'none' : 'flex' }}
+                    >
+                      <span className="text-lg text-black/60 font-medium">
+                        {project.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Project Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <Link 
@@ -153,39 +184,39 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                         </Badge>
                       )}
                     </div>
-                  </div>
 
-                  {/* Improved layout with proper spacing and no overlapping */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <Calendar className="h-4 w-4 text-black/60 shrink-0" />
-                      <span className="font-medium text-black/80 truncate">{launchDate}</span>
-                    </div>
-                    
-                    {fdvAmount && (
+                    {/* Fixed layout - each item gets its own row on mobile to prevent overlap */}
+                    <div className="space-y-2 sm:space-y-1 text-sm">
                       <div className="flex items-center space-x-2 min-w-0">
-                        <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
-                        <span className="font-medium text-black/80 truncate" title={fdvAmount}>
-                          {truncateMiddle(fdvAmount, 15)}
-                        </span>
+                        <Calendar className="h-4 w-4 text-black/60 shrink-0" />
+                        <span className="font-medium text-black/80 truncate">{launchDate}</span>
                       </div>
-                    )}
-
-                    {backers.length > 0 && (
-                      <div className="flex items-center space-x-2 min-w-0 sm:col-span-2 lg:col-span-1">
-                        <Users className="h-4 w-4 text-black/60 shrink-0" />
-                        <div className="flex items-center gap-1 min-w-0">
-                          <span className="font-medium text-black/70 whitespace-nowrap">
-                            {backers.length} backer{backers.length > 1 ? 's' : ''}
+                      
+                      {fdvAmount && (
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
+                          <span className="font-medium text-black/80 truncate" title={fdvAmount}>
+                            {truncateMiddle(fdvAmount, 20)}
                           </span>
-                          {backers.length > 0 && (
-                            <span className="text-black/50 truncate" title={backers.map(getBackerName).join(', ')}>
-                              ({backers.slice(0, 2).map(getBackerName).join(', ')}{backers.length > 2 ? '...' : ''})
-                            </span>
-                          )}
                         </div>
-                      </div>
-                    )}
+                      )}
+
+                      {backers.length > 0 && (
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <Users className="h-4 w-4 text-black/60 shrink-0" />
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="font-medium text-black/70 whitespace-nowrap">
+                              {backers.length} backer{backers.length > 1 ? 's' : ''}
+                            </span>
+                            {backers.length > 0 && (
+                              <span className="text-black/50 truncate" title={backers.map(getBackerName).join(', ')}>
+                                ({backers.slice(0, 2).map(getBackerName).join(', ')}{backers.length > 2 ? '...' : ''})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>

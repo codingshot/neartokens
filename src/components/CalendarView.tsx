@@ -187,8 +187,39 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
             return (
               <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
                 <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1">
+                  <div className="flex items-start gap-4">
+                    {/* Project Logo */}
+                    <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                      {project.logo ? (
+                        <img 
+                          src={project.logo} 
+                          alt={`${project.name} logo`}
+                          className="w-12 h-12 rounded-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const fallback = parent.querySelector('.fallback-logo') as HTMLElement;
+                              if (fallback) {
+                                fallback.style.display = 'flex';
+                              }
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div 
+                        className="fallback-logo w-12 h-12 rounded-full bg-black/10 flex items-center justify-center"
+                        style={{ display: project.logo ? 'none' : 'flex' }}
+                      >
+                        <span className="text-lg text-black/60 font-medium">
+                          {project.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Project Content */}
+                    <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-2">
                         <Link 
                           to={`/project/${project.id}`}
@@ -229,7 +260,8 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    {/* Launch Date */}
+                    <div className="text-right flex-shrink-0">
                       <div className="text-sm font-semibold text-black mb-1">Launch Date</div>
                       <div className="text-lg font-bold text-[#00ec97]">{launchDate}</div>
                     </div>
