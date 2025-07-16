@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,7 +14,7 @@ const Index = () => {
   const isMobile = useIsMobile();
 
   // Fetch token data
-  const { data: tokenData, loading, error } = useQuery({
+  const { data: tokenData, isLoading, error } = useQuery({
     queryKey: ['tokens'],
     queryFn: async () => {
       const response = await fetch('/data/tokens.json');
@@ -79,7 +78,7 @@ const Index = () => {
               <h1 className="text-2xl sm:text-3xl font-semibold text-black mb-2">NEAR Tokens</h1>
               <p className="text-sm sm:text-base text-black/70 font-medium">
                 Tokens on NEAR, launch schedule
-                {loading && <span className="ml-2 text-[#17d9d4]">(Loading token data...)</span>}
+                {isLoading && <span className="ml-2 text-[#17d9d4]">(Loading token data...)</span>}
                 {error && <span className="ml-2 text-[#ff7966]">(Using cached data)</span>}
               </p>
             </div>
