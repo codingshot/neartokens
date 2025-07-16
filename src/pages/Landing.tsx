@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +31,7 @@ const Landing = () => {
     { value: "0", label: "Token Projects", icon: Coins },
     { value: "0", label: "Token Sales", icon: CheckCircle },
     { value: "0", label: "Token Listings", icon: Clock },
-    { value: "$0", label: "Combined FDV", icon: TrendingUp }
+    { value: "$0", label: "Total Value", icon: TrendingUp }
   ]);
 
   // Fetch real token data
@@ -54,13 +53,13 @@ const Landing = () => {
       const totalProjects = statistics.total_projects;
       const tokenSales = statistics.total_token_sales;
       const tokenListings = statistics.total_token_listings;
-      const estimatedFDV = `$${Object.keys(statistics.fdv_ranges).length * 25}M+`;
+      const estimatedValue = `$${totalProjects * 25}M+`;
 
       setStats([
         { value: `${totalProjects}`, label: "Token Projects", icon: Coins },
         { value: `${tokenSales}`, label: "Token Sales", icon: CheckCircle },
         { value: `${tokenListings}`, label: "Token Listings", icon: Clock },
-        { value: estimatedFDV, label: "Combined FDV", icon: TrendingUp }
+        { value: estimatedValue, label: "Total Value", icon: TrendingUp }
       ]);
     }
   }, [tokenData]);
@@ -78,8 +77,8 @@ const Landing = () => {
     },
     {
       icon: BarChart3,
-      title: "FDV Analytics",
-      description: "Track fully diluted valuations, market metrics, and funding rounds across all NEAR token projects."
+      title: "Market Analytics",
+      description: "Track market metrics, funding rounds, and valuations across all NEAR token projects."
     },
     {
       icon: Users,
@@ -132,7 +131,7 @@ const Landing = () => {
           </h1>
           <p className="text-xl text-black/70 max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
             Comprehensive token launch tracking for the NEAR Protocol ecosystem. 
-            Monitor upcoming sales, listings, FDV metrics, and launch schedules across all NEAR token projects.
+            Monitor upcoming sales, listings, metrics, and launch schedules across all NEAR token projects.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/">
@@ -232,7 +231,7 @@ const Landing = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-black mb-2">Investment Tracking</h3>
-                  <p className="text-black/70 font-medium">Monitor FDV ranges, backer networks, and funding rounds for informed decisions</p>
+                  <p className="text-black/70 font-medium">Monitor funding rounds, backer networks, and investment patterns for informed decisions</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">

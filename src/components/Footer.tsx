@@ -79,13 +79,6 @@ export const Footer = () => {
               >
                 GitHub
               </a>
-              
-              <Link 
-                to="/landing" 
-                className="block text-sm text-black/60 hover:text-[#17d9d4] transition-colors"
-              >
-                About
-              </Link>
 
               <Link 
                 to="/updates" 
