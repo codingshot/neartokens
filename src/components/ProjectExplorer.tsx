@@ -1,26 +1,19 @@
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { ProjectCard } from '@/components/ProjectCard';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, SlidersHorizontal, X, Grid3X3, List } from 'lucide-react';
-import { ProjectCard } from './ProjectCard';
+import { Card, CardContent } from '@/components/ui/card';
+import { Calendar, DollarSign, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Project {
   id: number | string;
   name: string;
   category: string | string[];
   status: 'upcoming' | 'completed';
-  progress?: number;
-  nextMilestone?: string;
-  dueDate?: string;
-  team?: string[];
-  dependencies?: string[];
-  fundingType?: string;
-  description?: string;
   type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
   sale_date?: string;
   launch_date?: string;
   size_fdv?: string;
@@ -30,321 +23,199 @@ interface Project {
 
 interface ProjectExplorerProps {
   projects: Project[];
+  viewMode?: 'cards' | 'list';
 }
 
-export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [dateRangeFilter, setDateRangeFilter] = useState('all');
-  const [fdvFilter, setFdvFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplorerProps) => {
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'status'>('name');
 
-  // Safe array handling
-  const safeProjects = Array.isArray(projects) ? projects : [];
-
-  const filteredProjects = safeProjects.filter((project) => {
-    // Ensure project has required fields
-    if (!project || !project.name) return false;
-    
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (project.team || []).some(member => member.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    
-    // Safe category handling
-    const projectCategories = Array.isArray(project.category) ? project.category : [project.category].filter(Boolean);
-    const matchesCategory = categoryFilter === 'all' || projectCategories.includes(categoryFilter);
-    
-    const matchesType = typeFilter === 'all' || project.type === typeFilter;
-    
-    // Date range filtering for Q3, Q4 2025, etc.
-    const matchesDateRange = dateRangeFilter === 'all' ||
-      (dateRangeFilter === 'q3-2025' && (project.sale_date?.includes('Q3 2025') || project.launch_date?.includes('Q3 2025'))) ||
-      (dateRangeFilter === 'q4-2025' && (project.sale_date?.includes('Q4 2025') || project.launch_date?.includes('Q4 2025'))) ||
-      (dateRangeFilter === '2026' && (project.sale_date?.includes('2026') || project.launch_date?.includes('2026')));
-    
-    // FDV filtering
-    const fdvValue = project.size_fdv || project.expected_fdv || '';
-    const matchesFdv = fdvFilter === 'all' ||
-      (fdvFilter === 'under-25mm' && fdvValue.includes('< $25mm')) ||
-      (fdvFilter === '25mm-50mm' && (fdvValue.includes('20mm') || fdvValue.includes('40mm'))) ||
-      (fdvFilter === 'over-50mm' && fdvValue.includes('> 50mm')) ||
-      (fdvFilter === 'over-160mm' && fdvValue.includes('> $160mm')) ||
-      (fdvFilter === 'undisclosed' && (fdvValue.includes('TBC') || fdvValue.includes('Undisclosed')));
-    
-    return matchesSearch && matchesStatus && matchesCategory && matchesType && matchesDateRange && matchesFdv;
-  });
-
-  // Sort projects with safe handling
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    let comparison = 0;
-    
+  // Sort projects
+  const sortedProjects = [...projects].sort((a, b) => {
     switch (sortBy) {
       case 'name':
-        comparison = (a.name || '').localeCompare(b.name || '');
-        break;
-      case 'launch_date':
+        return a.name.localeCompare(b.name);
+      case 'date':
         const dateA = a.sale_date || a.launch_date || '';
         const dateB = b.sale_date || b.launch_date || '';
-        comparison = dateA.localeCompare(dateB);
-        break;
-      case 'fdv':
-        const fdvA = a.size_fdv || a.expected_fdv || '';
-        const fdvB = b.size_fdv || b.expected_fdv || '';
-        comparison = fdvA.localeCompare(fdvB);
-        break;
+        return dateA.localeCompare(dateB);
       case 'status':
-        const statusOrder = { 'upcoming': 0, 'completed': 1 };
-        comparison = statusOrder[a.status] - statusOrder[b.status];
-        break;
+        return a.status.localeCompare(b.status);
       default:
-        comparison = (a.name || '').localeCompare(b.name || '');
+        return 0;
     }
-    
-    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  // Get unique categories safely
-  const categories = [...new Set(
-    safeProjects.flatMap(p => 
-      Array.isArray(p.category) ? p.category : [p.category]
-    ).filter(Boolean)
-  )];
-
-  const clearAllFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('all');
-    setCategoryFilter('all');
-    setDateRangeFilter('all');
-    setFdvFilter('all');
-    setTypeFilter('all');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'upcoming':
+        return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
+      case 'completed':
+        return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
+      default:
+        return 'bg-black/5 text-black border-black/20';
+    }
   };
 
-  const activeFiltersCount = [
-    searchTerm,
-    statusFilter !== 'all' && statusFilter,
-    categoryFilter !== 'all' && categoryFilter,
-    dateRangeFilter !== 'all' && dateRangeFilter,
-    fdvFilter !== 'all' && fdvFilter,
-    typeFilter !== 'all' && typeFilter
-  ].filter(Boolean).length;
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'sale':
+        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
+      case 'listing':
+        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
+      default:
+        return 'bg-black/5 text-black border-black/20';
+    }
+  };
 
-  return (
-    <div className="space-y-6">
-      {/* Token Launch Search and Filters */}
-      <Card className="bg-white border-black/10 shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between text-xl font-semibold text-black">
-            <div className="flex items-center space-x-3">
-              <Search className="h-5 w-5" />
-              <span>Token Launch Explorer</span>
-            </div>
-            <Badge variant="outline" className="font-medium border-black/20 text-black">
-              {activeFiltersCount} Active Filter{activeFiltersCount !== 1 ? 's' : ''}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Search Input */}
-          <div className="flex flex-col lg:flex-row gap-3">
-            <div className="flex-1">
-              <Input
-                placeholder="Search token projects, descriptions, or teams..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border-black/20 focus:border-[#00ec97] font-medium"
-              />
-            </div>
-          </div>
-          
-          {/* Filters Row */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="border-black/20 font-medium">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="sale">Token Sales</SelectItem>
-                <SelectItem value="listing">Token Listings</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="border-black/20 font-medium">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="border-black/20 font-medium">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  if (sortedProjects.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-black/40 mb-4">
+          <Calendar className="h-16 w-16 mx-auto" />
+        </div>
+        <h3 className="text-lg font-semibold text-black mb-2">No tokens found</h3>
+        <p className="text-black/60">Try adjusting your search or filters to find more tokens.</p>
+      </div>
+    );
+  }
 
-            <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-              <SelectTrigger className="border-black/20 font-medium">
-                <SelectValue placeholder="Launch Period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Periods</SelectItem>
-                <SelectItem value="q3-2025">Q3 2025</SelectItem>
-                <SelectItem value="q4-2025">Q4 2025</SelectItem>
-                <SelectItem value="2026">2026</SelectItem>
-              </SelectContent>
-            </Select>
+  if (viewMode === 'list') {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="text-sm font-medium text-black/70">Sort by:</span>
+          <button
+            onClick={() => setSortBy('name')}
+            className={`text-xs px-2 py-1 rounded ${sortBy === 'name' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+          >
+            Name
+          </button>
+          <button
+            onClick={() => setSortBy('date')}
+            className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+          >
+            Date
+          </button>
+          <button
+            onClick={() => setSortBy('status')}
+            className={`text-xs px-2 py-1 rounded ${sortBy === 'status' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+          >
+            Status
+          </button>
+        </div>
 
-            <Select value={fdvFilter} onValueChange={setFdvFilter}>
-              <SelectTrigger className="border-black/20 font-medium">
-                <SelectValue placeholder="FDV Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All FDV</SelectItem>
-                <SelectItem value="under-25mm">Under $25M</SelectItem>
-                <SelectItem value="25mm-50mm">$25M - $50M</SelectItem>
-                <SelectItem value="over-50mm">Over $50M</SelectItem>
-                <SelectItem value="over-160mm">Over $160M</SelectItem>
-                <SelectItem value="undisclosed">Undisclosed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-3">
+          {sortedProjects.map((project) => {
+            const launchDate = project.sale_date || project.launch_date || 'TBD';
+            const fdvAmount = project.size_fdv || project.expected_fdv;
+            const categories = Array.isArray(project.category) ? project.category : [project.category];
+            const backers = project.backers || [];
 
-          {/* Controls Row */}
-          <div className="flex flex-wrap items-center gap-3 justify-between">
-            <div className="flex items-center gap-3">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="border-black/20 font-medium w-40">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="launch_date">Launch Date</SelectItem>
-                  <SelectItem value="fdv">FDV</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                </SelectContent>
-              </Select>
+            return (
+              <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <Link 
+                          to={`/project/${project.id}`}
+                          className="font-semibold text-lg text-black hover:text-[#00ec97] transition-colors truncate"
+                        >
+                          {project.name}
+                        </Link>
+                        {project.symbol && (
+                          <span className="text-sm text-black/60 font-medium">${project.symbol}</span>
+                        )}
+                        <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
+                          {project.status}
+                        </Badge>
+                        {project.type && (
+                          <Badge className={`font-medium text-xs ${getTypeColor(project.type)}`}>
+                            {project.type}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {project.description && (
+                        <p className="text-sm text-black/70 font-medium line-clamp-2 mb-2">
+                          {project.description}
+                        </p>
+                      )}
 
-              <div className="flex gap-1">
-                <Button
-                  variant={sortOrder === 'asc' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSortOrder('asc')}
-                  className={sortOrder === 'asc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
-                >
-                  A-Z
-                </Button>
-                <Button
-                  variant={sortOrder === 'desc' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSortOrder('desc')}
-                  className={sortOrder === 'desc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
-                >
-                  Z-A
-                </Button>
-              </div>
-            </div>
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {categories.slice(0, 3).map((cat: string) => (
+                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                            {cat}
+                          </Badge>
+                        ))}
+                        {categories.length > 3 && (
+                          <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                            +{categories.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex gap-1">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('grid')}
-                  className={viewMode === 'grid' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                  className={viewMode === 'list' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
+                    <div className="flex flex-col md:flex-row gap-4 text-sm shrink-0">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="h-4 w-4 text-black/60" />
+                        <span className="font-medium text-black/80">{launchDate}</span>
+                      </div>
+                      
+                      {fdvAmount && (
+                        <div className="flex items-center space-x-2">
+                          <DollarSign className="h-4 w-4 text-black/60" />
+                          <span className="font-medium text-black/80">{fdvAmount}</span>
+                        </div>
+                      )}
 
-              {/* Clear Filters */}
-              {activeFiltersCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAllFilters}
-                  className="font-medium hover:bg-black/5"
-                >
-                  <X className="mr-1 h-3 w-3" />
-                  Clear All
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Results Summary */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <p className="text-sm text-black/60 font-medium">
-            Showing {sortedProjects.length} of {safeProjects.length} token projects
-          </p>
-          <div className="flex items-center space-x-2">
-            <SlidersHorizontal className="h-4 w-4 text-black/60" />
-            <span className="text-sm text-black/60 font-medium">
-              Sorted by {sortBy} ({sortOrder === 'asc' ? 'ascending' : 'descending'})
-            </span>
-          </div>
+                      {backers.length > 0 && (
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-black/60" />
+                          <span className="font-medium text-black/70">{backers.length} backers</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
+    );
+  }
 
-      {/* Projects Grid/List */}
-      <div className={
-        viewMode === 'grid'
-          ? 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6'
-          : 'space-y-4'
-      }>
+  // Cards view (default)
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 mb-4">
+        <span className="text-sm font-medium text-black/70">Sort by:</span>
+        <button
+          onClick={() => setSortBy('name')}
+          className={`text-xs px-2 py-1 rounded ${sortBy === 'name' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+        >
+          Name
+        </button>
+        <button
+          onClick={() => setSortBy('date')}
+          className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+        >
+          Date
+        </button>
+        <button
+          onClick={() => setSortBy('status')}
+          className={`text-xs px-2 py-1 rounded ${sortBy === 'status' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+        >
+          Status
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedProjects.map((project) => (
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
-
-      {sortedProjects.length === 0 && (
-        <Card className="bg-white border-black/10 shadow-sm">
-          <CardContent className="py-12 text-center">
-            <div className="text-black/60">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2 text-black">No token projects found</h3>
-              <p className="font-medium mb-4">Try adjusting your search terms or filters</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="font-medium border-black/20 hover:border-[#00ec97]"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Clear All Filters
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
