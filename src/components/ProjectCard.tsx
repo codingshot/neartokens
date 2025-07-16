@@ -97,15 +97,17 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
                     </AvatarFallback>
                   </Avatar>
                 )}
-                <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
-                  {project.name}
-                </h3>
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
+                    {project.name}
+                  </h3>
+                  {project.symbol && (
+                    <span className="text-sm text-black/60 font-medium">
+                      ${project.symbol}
+                    </span>
+                  )}
+                </div>
               </div>
-              {project.symbol && (
-                <p className="text-sm text-black/60 font-medium ml-11">
-                  ${project.symbol}
-                </p>
-              )}
             </div>
             <div className="flex flex-col gap-1 ml-4">
               <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
