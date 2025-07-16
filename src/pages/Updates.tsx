@@ -1,262 +1,193 @@
-import { useState, useEffect } from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { GitBranch, Clock, User, Hash, ExternalLink, RefreshCw } from 'lucide-react';
-import { ChangelogService, ChangelogEntry, Change } from '@/services/changelogService';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { Calendar, TrendingUp, Coins, Plus, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Updates = () => {
-  const [changelog, setChangelog] = useState<ChangelogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const changelogService = ChangelogService.getInstance();
-
-  const fetchChangelog = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await changelogService.getChangelog();
-      setChangelog(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch changelog');
-      console.error('Error fetching changelog:', err);
-    } finally {
-      setLoading(false);
+  const updates = [
+    {
+      date: "2025-07-15",
+      title: "NEAR Token Season 2025 Database Launch",
+      description: "Launched comprehensive tracking for 12 token projects across NEAR ecosystem including AI, DeFi, and Wallet categories.",
+      type: "launch",
+      projects: ["Intellex", "ConsumerFi", "VIBES", "Fraction AI"]
+    },
+    {
+      date: "2025-07-14",
+      title: "Intents Launchpad Integration",
+      description: "Added support for NEAR's Intents-based launchpad with fixed price and auction style sales tracking.",
+      type: "feature",
+      projects: []
+    },
+    {
+      date: "2025-07-13",
+      title: "Q3/Q4 2025 Launch Schedule",
+      description: "Updated token launch calendar with confirmed dates for major NEAR ecosystem projects.",
+      type: "data",
+      projects: ["RHEA Finance", "PublicAI", "HOT Protocol"]
+    },
+    {
+      date: "2025-07-12",
+      title: "FDV Tracking & Categories",
+      description: "Added comprehensive FDV range tracking and category filtering for AI, DeFi, Wallet, and RWA projects.",
+      type: "feature",
+      projects: []
+    },
+    {
+      date: "2025-07-11",
+      title: "Backer Network Database",
+      description: "Integrated investor and backer information for all tracked token projects.",
+      type: "data",
+      projects: ["Shima Capital", "Animoca Brands", "Foresight Ventures"]
     }
-  };
+  ];
 
-  useEffect(() => {
-    fetchChangelog();
-  }, []);
-
-  const getChangeTypeColor = (type: Change['type']) => {
+  const getTypeColor = (type: string) => {
     switch (type) {
-      case 'milestone_completed':
-        return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
-      case 'milestone_delayed':
-        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
-      case 'project_added':
-        return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
-      case 'updated':
-        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
-      case 'added':
-        return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
-      case 'removed':
-        return 'bg-black/10 text-black border-black/30';
+      case 'launch':
+        return 'bg-[#00ec97]/10 text-[#00ec97] border-[#00ec97]/30';
+      case 'feature':
+        return 'bg-[#17d9d4]/10 text-[#17d9d4] border-[#17d9d4]/30';
+      case 'data':
+        return 'bg-[#ff7966]/10 text-[#ff7966] border-[#ff7966]/30';
       default:
-        return 'bg-black/10 text-black border-black/30';
+        return 'bg-black/5 text-black border-black/20';
     }
   };
 
-  const getChangeTypeIcon = (type: Change['type']) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'milestone_completed':
-        return '✅';
-      case 'milestone_delayed':
-        return '⚠️';
-      case 'project_added':
-        return '🆕';
-      case 'updated':
-        return '📝';
-      case 'added':
-        return '➕';
-      case 'removed':
-        return '➖';
+      case 'launch':
+        return TrendingUp;
+      case 'feature':
+        return Plus;
+      case 'data':
+        return Coins;
       default:
-        return '📄';
+        return Calendar;
     }
   };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
 
   return (
-    <div className="bg-[#f2f1e9]">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="text-4xl">🚀</div>
-            <h1 className="text-4xl font-bold text-black">NEAR Ecosystem Product Updates</h1>
-          </div>
-          <p className="text-xl text-black/60 font-medium max-w-2xl mx-auto">
-            Stay up to date with the latest changes, milestone completions, and project updates in the NEAR ecosystem
-          </p>
-          <div className="flex justify-center mt-6">
-            <Button
-              onClick={fetchChangelog}
-              variant="outline"
-              className="font-medium border-black/20 hover:border-[#00ec97]"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh Updates
-            </Button>
+    <div className="min-h-screen bg-[#f2f1e9]">
+      {/* Header */}
+      <header className="bg-white border-b border-black/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-black mb-4">NEAR Tokens Updates</h1>
+            <p className="text-xl text-black/70 max-w-2xl mx-auto font-medium">
+              Latest updates on NEAR Protocol token launches, project additions, and platform improvements
+            </p>
           </div>
         </div>
+      </header>
 
-        {/* Error State */}
-        {error && (
-          <Card className="bg-[#ff7966]/10 border-[#ff7966]/30 mb-8">
-            <CardContent className="p-6">
-              <div className="text-center text-black">
-                <p className="font-medium">Error loading updates: {error}</p>
-                <Button
-                  onClick={fetchChangelog}
-                  variant="outline"
-                  className="mt-4 font-medium"
-                >
-                  Try Again
-                </Button>
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        {/* Stats Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Card className="bg-white border-black/10 shadow-sm">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-[#00ec97]/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Coins className="h-6 w-6 text-[#00ec97]" />
               </div>
+              <div className="text-3xl font-bold text-black mb-2">12</div>
+              <div className="text-black/60 font-medium">Total Projects</div>
             </CardContent>
           </Card>
-        )}
+          
+          <Card className="bg-white border-black/10 shadow-sm">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-[#17d9d4]/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-6 w-6 text-[#17d9d4]" />
+              </div>
+              <div className="text-3xl font-bold text-black mb-2">Q3-Q4</div>
+              <div className="text-black/60 font-medium">2025 Launches</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-white border-black/10 shadow-sm">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-[#ff7966]/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-6 w-6 text-[#ff7966]" />
+              </div>
+              <div className="text-3xl font-bold text-black mb-2">8</div>
+              <div className="text-black/60 font-medium">AI Projects</div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Changelog Entries */}
-        <div className="space-y-8">
-          {changelog.length > 0 ? (
-            changelog.map((entry, index) => (
-              <Card key={entry.id} className="bg-white border-black/10 shadow-sm">
+        {/* Updates Timeline */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-black mb-8">Recent Updates</h2>
+          
+          {updates.map((update, index) => {
+            const Icon = getTypeIcon(update.type);
+            
+            return (
+              <Card key={index} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex items-center space-x-3">
-                        <Badge variant="outline" className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 font-medium">
-                          v{entry.version}
-                        </Badge>
-                        <div className="flex items-center space-x-2 text-sm text-black/60">
-                          <Clock className="h-4 w-4" />
-                          <span className="font-medium">{formatDate(entry.date)}</span>
+                        <div className="w-10 h-10 bg-gradient-to-br from-current/10 to-current/5 rounded-lg flex items-center justify-center">
+                          <Icon className="h-5 w-5 text-black" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl font-semibold text-black">{update.title}</CardTitle>
+                          <p className="text-sm text-black/60 font-medium">{update.date}</p>
                         </div>
                       </div>
-                      
-                      {entry.commitHash && (
-                        <div className="flex items-center space-x-4 text-sm text-black/60">
-                          <div className="flex items-center space-x-2">
-                            <Hash className="h-4 w-4" />
-                            <span className="font-mono font-medium">{entry.commitHash}</span>
-                          </div>
-                          {entry.author && (
-                            <div className="flex items-center space-x-2">
-                              <User className="h-4 w-4" />
-                              <span className="font-medium">{entry.author}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      
-                      {entry.commitMessage && (
-                        <p className="text-sm text-black/70 font-medium italic">
-                          "{entry.commitMessage}"
-                        </p>
-                      )}
                     </div>
-                    
-                    <Button
-                      onClick={() => window.open('https://github.com/codingshot/nearmilestones/commits', '_blank')}
-                      variant="ghost"
-                      size="sm"
-                      className="font-medium"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <Badge className={`font-medium ${getTypeColor(update.type)}`}>
+                      {update.type}
+                    </Badge>
                   </div>
                 </CardHeader>
                 
-                <CardContent>
-                  <div className="space-y-4">
-                    {entry.changes.map((change, changeIndex) => (
-                      <div key={changeIndex} className="flex items-start space-x-4 p-4 bg-[#f2f1e9] rounded-lg">
-                        <div className="text-xl flex-shrink-0">
-                          {getChangeTypeIcon(change.type)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-black">{change.title}</h3>
-                            <Badge 
-                              variant="outline" 
-                              className={`${getChangeTypeColor(change.type)} font-medium`}
-                            >
-                              {change.type.replace('_', ' ')}
-                            </Badge>
-                          </div>
-                          <p className="text-black/70 font-medium">{change.description}</p>
-                          
-                          {change.projectId && (
-                            <div className="mt-2 flex items-center space-x-2">
-                              <span className="text-sm text-black/60 font-medium">Project:</span>
-                              <Badge variant="outline" className="bg-white text-black border-black/20 font-medium">
-                                {change.projectId}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
+                <CardContent className="space-y-4">
+                  <p className="text-black/80 font-medium leading-relaxed">{update.description}</p>
+                  
+                  {update.projects.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-black">Related Projects:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {update.projects.map((project, projectIndex) => (
+                          <Badge key={projectIndex} variant="outline" className="bg-white border-black/20 text-black font-medium">
+                            {project}
+                          </Badge>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ))
-          ) : (
-            <Card className="bg-white border-black/10 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <div className="text-6xl mb-4">🚀</div>
-                <h3 className="text-xl font-semibold text-black mb-2">No Updates Yet</h3>
-                <p className="text-black/60 font-medium">
-                  Check back later for the latest updates and changes to NEAR ecosystem projects.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+            );
+          })}
         </div>
 
-        {/* Stats Section */}
-        <Card className="bg-white border-black/10 shadow-sm mt-12">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-black">Update Statistics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-[#f2f1e9] rounded-lg p-4 text-center">
-                <div className="text-2xl font-semibold text-black">{changelog.length}</div>
-                <div className="text-sm text-black/60 font-medium">Total Updates</div>
-              </div>
-              <div className="bg-[#f2f1e9] rounded-lg p-4 text-center">
-                <div className="text-2xl font-semibold text-black">
-                  {changelog.reduce((acc, entry) => acc + entry.changes.filter(c => c.type === 'milestone_completed').length, 0)}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Milestones Completed</div>
-              </div>
-              <div className="bg-[#f2f1e9] rounded-lg p-4 text-center">
-                <div className="text-2xl font-semibold text-black">
-                  {changelog.reduce((acc, entry) => acc + entry.changes.filter(c => c.type === 'project_added').length, 0)}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Projects Added</div>
-              </div>
-              <div className="bg-[#f2f1e9] rounded-lg p-4 text-center">
-                <div className="text-2xl font-semibold text-black">
-                  {changelog.reduce((acc, entry) => acc + entry.changes.length, 0)}
-                </div>
-                <div className="text-sm text-black/60 font-medium">Total Changes</div>
-              </div>
+        {/* Call to Action */}
+        <Card className="bg-gradient-to-r from-[#00ec97]/5 to-[#17d9d4]/5 border-black/10 mt-12">
+          <CardContent className="p-8 text-center">
+            <h3 className="text-2xl font-bold text-black mb-4">Stay Updated</h3>
+            <p className="text-black/70 font-medium mb-6 max-w-2xl mx-auto">
+              Track the latest NEAR Protocol token launches and get notified about new project additions to our database.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/"
+                className="inline-flex items-center px-6 py-3 bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-semibold rounded-lg transition-colors"
+              >
+                View All Projects
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+              <Link
+                to="/landing"
+                className="inline-flex items-center px-6 py-3 border border-black/20 hover:bg-black/5 text-black font-semibold rounded-lg transition-colors"
+              >
+                Learn More
+              </Link>
             </div>
           </CardContent>
         </Card>

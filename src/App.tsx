@@ -18,7 +18,7 @@ const queryClient = new QueryClient();
 const App = () => {
   // Update document title for NEAR Tokens
   React.useEffect(() => {
-    document.title = "NEAR Tokens - Token Launch Tracker";
+    document.title = "NEAR Tokens - Tokens on NEAR, launch schedule";
   }, []);
 
   return (
@@ -34,7 +34,6 @@ const App = () => {
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/project/:projectId" element={<ProjectDetail />} />
                 <Route path="/api" element={<ApiDocs />} />
-                <Route path="/data" element={<ApiDocs />} />
                 <Route path="/updates" element={<Updates />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
