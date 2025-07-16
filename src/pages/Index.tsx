@@ -167,7 +167,7 @@ export default function Index() {
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
                 <a 
-                  href="https://nearlend.org/blog" 
+                  href="https://near.org/blog/token-season-on-near" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex items-center space-x-2"

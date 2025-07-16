@@ -64,7 +64,7 @@ export const Footer = () => {
             <h4 className="text-sm font-semibold text-black mb-3">Links</h4>
             <div className="space-y-2">
               <a 
-                href="https://nearlend.org/blog" 
+                href="https://near.org/blog/token-season-on-near" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="block text-sm text-black/60 hover:text-[#17d9d4] transition-colors"
