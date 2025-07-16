@@ -1,5 +1,4 @@
 
-import { Github } from 'lucide-react';
 import { GitHubService } from '@/services/githubService';
 import { Link } from 'react-router-dom';
 import { SubmitTokenDialog } from './SubmitTokenDialog';
@@ -76,10 +75,9 @@ export const Footer = () => {
                 href={githubService.getRepoUrl()} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="flex items-center justify-center md:justify-start space-x-2 text-sm text-black/60 hover:text-[#00ec97] transition-colors"
+                className="block text-sm text-black/60 hover:text-[#00ec97] transition-colors"
               >
-                <Github className="h-4 w-4" />
-                <span>GitHub</span>
+                GitHub
               </a>
               
               <Link 
