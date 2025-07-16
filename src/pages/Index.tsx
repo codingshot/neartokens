@@ -19,6 +19,26 @@ import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+interface Project {
+  id: number | string;
+  name: string;
+  category: string | string[];
+  status: 'upcoming' | 'completed';
+  type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
+  sale_date?: string;
+  launch_date?: string;
+  size_fdv?: string;
+  expected_fdv?: string;
+  logo?: string;
+  backers?: Array<{
+    name: string;
+    logo?: string;
+    link?: string;
+  }> | string[];
+}
+
 interface TokensData {
   token_sales: Project[];
   token_listings: Project[];
@@ -202,13 +222,13 @@ export default function Index() {
       <section className="bg-white border-b border-black/10 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl font-semibold text-black mb-3">
-            Track tokens launches on NEAR Protocol
+            Track tokens on NEAR Protocol
           </h2>
           <p className="text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col items-center justify-center space-y-3">
               <Input
                 type="text"
                 placeholder="Search for tokens..."
@@ -216,10 +236,10 @@ export default function Index() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="All Categories" />
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Categories" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="DeFi">DeFi</SelectItem>
@@ -228,13 +248,15 @@ export default function Index() {
                     <SelectItem value="Infrastructure">Infrastructure</SelectItem>
                   </SelectContent>
                 </Select>
+                
                 <MultiSelect
                   options={allBackers}
                   selected={selectedBackers}
                   onChange={setSelectedBackers}
                   placeholder="Backers"
-                  className="w-full sm:w-auto"
+                  className="w-[120px]"
                 />
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="w-fit">
@@ -254,6 +276,7 @@ export default function Index() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
                 <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')}>
                   <ToggleGroupItem value="cards" aria-label="Card view">
                     <Grid2X2 className="h-4 w-4" />
@@ -265,6 +288,7 @@ export default function Index() {
                     <Calendar className="h-4 w-4" />
                   </ToggleGroupItem>
                 </ToggleGroup>
+
                 {hasFilters && (
                   <Button variant="outline" size="sm" onClick={clearFilters}>
                     <span className="sm:hidden">Clear</span>
@@ -276,7 +300,7 @@ export default function Index() {
             
             {/* Active Filters Row */}
             {activeFilters.length > 0 && (
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="flex flex-wrap gap-2 justify-start max-w-md mx-auto">
                 {activeFilters.map((filter, index) => (
                   <Badge 
                     key={`${filter.type}-${filter.value}-${index}`}

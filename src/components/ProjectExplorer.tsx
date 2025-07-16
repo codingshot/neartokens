@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+// Import Project interface from ProjectCard to ensure consistency
 interface Project {
   id: number | string;
   name: string;
