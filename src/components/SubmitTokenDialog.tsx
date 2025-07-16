@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -68,9 +67,26 @@ export const SubmitTokenDialog = () => {
   const generateSubmissionPR = (tokenData: any, type: 'sale' | 'listing') => {
     const title = encodeURIComponent(`Add ${tokenData.name} Token ${type === 'sale' ? 'Sale' : 'Listing'}`);
     
-    const jsonToAdd = JSON.stringify(tokenData, null, 2);
     const arrayName = type === 'sale' ? 'token_sales' : 'token_listings';
+    const jsonToAdd = JSON.stringify(tokenData, null, 4); // 4 spaces for better readability in PR
     
+    // Create the file content that shows the exact change to be made
+    const fileContent = `{
+  "metadata": {
+    "title": "NEAR Token Season 2025 Database",
+    "description": "Token launches and listings on NEAR blockchain for 2025",
+    "last_updated": "${new Date().toISOString().split('T')[0]}",
+    "period": "July 2025 - January 2026",
+    "launchpad_type": "NEAR Intents-Based Launchpad",
+    "token_standard": "NEP141"
+  },
+  "${arrayName}": [
+    // ... existing ${arrayName} entries ...
+    ${jsonToAdd}
+  ],
+  // ... rest of the file remains the same ...
+}`;
+
     const body = encodeURIComponent(`## New Token ${type === 'sale' ? 'Sale' : 'Listing'} Submission
 
 **Token Details:**
@@ -91,26 +107,47 @@ export const SubmitTokenDialog = () => {
 ${tokenData.key_features.map((feature: string) => `- ${feature}`).join('\n')}
 
 ---
-*This submission was created via the NEAR Tokens website*
 
-## Instructions for Maintainers
+## File Changes
 
-Please add the following JSON object to the \`${arrayName}\` array in \`public/data/tokens.json\`:
+Please add the following entry to the \`${arrayName}\` array in \`public/data/tokens.json\`:
 
 \`\`\`json
 ${jsonToAdd}
 \`\`\`
 
-**Steps:**
-1. Open \`public/data/tokens.json\`
-2. Find the \`"${arrayName}": [\` array
-3. Add the above JSON object to the array (don't forget the comma if it's not the last item)
-4. Update the \`statistics\` section to reflect the new totals
-5. Update the \`last_updated\` field in metadata
+### Instructions for Maintainers:
 
-Thank you for maintaining the NEAR Tokens database!`);
+1. **Edit \`public/data/tokens.json\`**
+2. **Find the \`"${arrayName}": [\` array**
+3. **Add the above JSON object as the last item in the array** (don't forget the comma before it if there are existing items)
+4. **Update the \`last_updated\` field** in metadata to today's date
+5. **Update the statistics section** to reflect:
+   - Increment \`total_${arrayName.replace('token_', '')}\` by 1
+   - Increment \`total_projects\` by 1
+   - Update category counts for: ${tokenData.category.join(', ')}
 
-    return `https://github.com/codingshot/neartokens/compare/main...?quick_pull=1&title=${title}&body=${body}`;
+### Example of where to place the new entry:
+\`\`\`json
+{
+  "metadata": { ... },
+  "${arrayName}": [
+    // ... existing entries ...
+    ${jsonToAdd}
+  ],
+  "statistics": {
+    "total_token_sales": X,
+    "total_token_listings": Y,
+    "total_projects": Z,
+    // ... update these numbers
+  }
+}
+\`\`\`
+
+*This submission was created via the NEAR Tokens website*`);
+
+    // Use GitHub's compare view to create a PR that suggests file changes
+    return `https://github.com/codingshot/neartokens/compare/main...?quick_pull=1&title=${title}&body=${body}&template=update`;
   };
 
   const addCategory = () => {
