@@ -1,16 +1,12 @@
-import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, Users, GitBranch, ExternalLink, Github, Globe, MessageCircle, FileText } from 'lucide-react';
-import { MilestoneTimeline } from '@/components/MilestoneTimeline';
-import { TwitterFeed } from '@/components/TwitterFeed';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { useGitHubData } from '@/hooks/useGitHubData';
+
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TwitterFeed } from '@/components/TwitterFeed';
+import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 
 interface TokenData {
   id: string;
@@ -31,6 +27,10 @@ interface TokenData {
   };
   website?: string;
   key_features?: string[];
+  partnerships?: string[];
+  traction?: Record<string, any>;
+  token_utility?: string;
+  governance?: string;
 }
 
 interface TokensData {
@@ -47,203 +47,43 @@ const fetchTokensData = async (): Promise<TokensData> => {
 };
 
 const ProjectDetail = () => {
-  const { projectId } = useParams();
-  const [searchParams] = useSearchParams();
-  const { projects, loading, generatePRUrl, generateIssueUrl } = useGitHubData();
+  const { id } = useParams<{ id: string }>();
   
-  const { data: tokensData, isLoading: tokensLoading } = useQuery({
+  const { data: tokensData, isLoading, error } = useQuery({
     queryKey: ['tokens'],
     queryFn: fetchTokensData,
   });
 
-  // Get project from tokens data first, then fallback to GitHub data
-  const project = tokensData 
-    ? [...tokensData.token_sales, ...tokensData.token_listings].find(p => p.id === projectId)
-    : projects.find(p => p.id === projectId);
-
-  const mockProjects = [
-    {
-      id: "omnibridge",
-      name: "Omnibridge",
-      category: "Infrastructure",
-      status: "on-track",
-      progress: 85,
-      nextMilestone: "Mainnet Beta",
-      dueDate: "2024-08-15",
-      team: [
-        { 
-          name: "Alice Chen", 
-          role: "Lead Developer",
-          github: "https://github.com/alicechen",
-          twitter: "https://twitter.com/alicechen" 
-        },
-        { 
-          name: "Bob Rodriguez", 
-          role: "Smart Contract Developer",
-          github: "https://github.com/bobrodriguez" 
-        }
-      ],
-      dependencies: ["NEAR Protocol Core"],
-      description: "Cross-chain bridge infrastructure enabling seamless asset transfers between NEAR and other blockchain networks. Built with security and user experience as top priorities.",
-      githubRepo: "https://github.com/omnibridge/omnibridge",
-      website: "https://omnibridge.near.org",
-      docs: "https://docs.omnibridge.near.org",
-      twitter: "https://twitter.com/omnibridge",
-      discord: "https://discord.gg/omnibridge",
-      fundingType: "Infrastructure Grant",
-      totalFunding: "$500,000",
-      fundingRounds: [
-        { round: "Seed", amount: "$200,000", date: "2024-01-15" },
-        { round: "Development", amount: "$300,000", date: "2024-04-01" }
-      ],
-      milestones: [
-        { 
-          id: "milestone-1", 
-          title: "Technical Architecture", 
-          status: "completed", 
-          dueDate: "2024-02-01", 
-          progress: 100,
-          description: "Complete system architecture design and technical specifications",
-          definitionOfDone: "Architecture document approved, technical stack finalized, and development roadmap created",
-          isGrantMilestone: true,
-          dependencies: [],
-          links: {
-            docs: "https://docs.omnibridge.near.org/architecture",
-            github: "https://github.com/omnibridge/architecture"
-          }
-        },
-        { 
-          id: "milestone-2", 
-          title: "Smart Contract Development", 
-          status: "completed", 
-          dueDate: "2024-04-15", 
-          progress: 100,
-          description: "Core smart contracts for cross-chain bridge functionality",
-          definitionOfDone: "All smart contracts deployed on testnet, unit tests passing with 95% coverage",
-          isGrantMilestone: true,
-          dependencies: ["milestone-1"],
-          links: {
-            github: "https://github.com/omnibridge/contracts",
-            testnet: "https://testnet.near.org/omnibridge"
-          }
-        },
-        { 
-          id: "milestone-3", 
-          title: "Security Audit", 
-          status: "completed", 
-          dueDate: "2024-06-01", 
-          progress: 100,
-          description: "Comprehensive security audit by third-party auditors",
-          definitionOfDone: "Audit report published, all critical vulnerabilities fixed, security recommendations implemented",
-          isGrantMilestone: true,
-          dependencies: ["milestone-2"],
-          links: {
-            auditReport: "https://audits.omnibridge.near.org/report-2024-06",
-            docs: "https://docs.omnibridge.near.org/security"
-          }
-        },
-        { 
-          id: "milestone-4", 
-          title: "Testnet Launch", 
-          status: "completed", 
-          dueDate: "2024-07-01", 
-          progress: 100,
-          description: "Full testnet deployment with user interface",
-          definitionOfDone: "Testnet operational, UI deployed, community testing completed with feedback incorporated",
-          isGrantMilestone: false,
-          dependencies: ["milestone-3"],
-          links: {
-            testnet: "https://testnet.omnibridge.near.org",
-            examples: "https://examples.omnibridge.near.org"
-          }
-        },
-        { 
-          id: "milestone-5", 
-          title: "Mainnet Beta", 
-          status: "in-progress", 
-          dueDate: "2024-08-15", 
-          progress: 75,
-          description: "Limited mainnet release for early adopters",
-          definitionOfDone: "Mainnet contracts deployed, beta testing program launched, initial user onboarding completed",
-          isGrantMilestone: true,
-          dependencies: ["milestone-4"],
-          links: {
-            github: "https://github.com/omnibridge/mainnet-beta"
-          }
-        },
-        { 
-          id: "milestone-6", 
-          title: "Full Mainnet Launch", 
-          status: "pending", 
-          dueDate: "2024-09-30", 
-          progress: 0,
-          description: "Public mainnet launch with full feature set",
-          definitionOfDone: "Full mainnet deployment, marketing campaign executed, user documentation complete",
-          isGrantMilestone: true,
-          dependencies: ["milestone-5"],
-          links: {}
-        }
-      ],
-      recentUpdates: [
-        { date: "2024-07-01", title: "Testnet Successfully Launched", description: "All core functionality tested and verified on testnet." },
-        { date: "2024-06-15", title: "Security Audit Completed", description: "No critical vulnerabilities found. Minor recommendations implemented." },
-        { date: "2024-06-01", title: "UI/UX Improvements", description: "Enhanced user interface based on community feedback." }
-      ]
-    },
-    {
-      id: "agent-hub-sdk",
-      name: "Agent Hub SDK",
-      category: "SDK",
-      status: "at-risk",
-      progress: 62,
-      nextMilestone: "API Documentation",
-      dueDate: "2024-07-28",
-      team: ["Carol Kim", "David Park"],
-      dependencies: ["NEAR Intents", "Lucid Wallet"],
-      description: "Comprehensive SDK for building AI agents on NEAR Protocol. Provides tools, libraries, and documentation for developers to create intelligent applications.",
-      githubRepo: "https://github.com/agenthub/sdk",
-      website: "https://agenthub.near.org",
-      fundingType: "SDK Development Grant",
-      totalFunding: "$300,000",
-      fundingRounds: [
-        { round: "Initial", amount: "$300,000", date: "2024-03-01" }
-      ],
-      milestones: [
-        { id: 1, title: "Core SDK Framework", status: "completed", dueDate: "2024-04-15", progress: 100 },
-        { id: 2, title: "Agent Templates", status: "completed", dueDate: "2024-05-30", progress: 100 },
-        { id: 3, title: "API Documentation", status: "in-progress", dueDate: "2024-07-28", progress: 60 },
-        { id: 4, title: "Example Applications", status: "pending", dueDate: "2024-08-30", progress: 10 }
-      ],
-      recentUpdates: [
-        { date: "2024-06-30", title: "Documentation Progress Update", description: "API documentation is 60% complete. Some delays due to scope expansion." },
-        { date: "2024-06-15", title: "Agent Templates Released", description: "Five new agent templates added to the SDK." }
-      ]
-    }
-  ];
-
-  const finalProject = project || mockProjects.find(p => p.id === projectId);
-  const allProjects = project ? [project] : projects.length > 0 ? projects : mockProjects;
-  const initialTab = searchParams.get('tab') || 'overview';
-
-  if (loading || tokensLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ec97]"></div>
       </div>
     );
   }
 
-  if (!finalProject) {
+  if (error) {
     return (
-      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl md:text-2xl font-semibold text-black mb-4">Project Not Found</h1>
-          <p className="text-black/60 mb-6">The project "{projectId}" could not be found.</p>
+          <h1 className="text-xl font-semibold text-black mb-2">Error loading data</h1>
+          <p className="text-black/60">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
+
+  const allProjects = [...(tokensData?.token_sales || []), ...(tokensData?.token_listings || [])];
+  const project = allProjects.find(p => p.id === id);
+
+  if (!project) {
+    return (
+      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold text-black mb-2">Project not found</h1>
+          <p className="text-black/60 mb-4">The project you're looking for doesn't exist.</p>
           <Link to="/">
-            <Button className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
+            <Button variant="outline">Back to All Launches</Button>
           </Link>
         </div>
       </div>
@@ -252,13 +92,8 @@ const ProjectDetail = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'on-track':
       case 'upcoming':
         return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
-      case 'at-risk':
-        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
-      case 'delayed':
-        return 'bg-[#ff7966]/20 text-black border-[#ff7966]/40';
       case 'completed':
         return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
       default:
@@ -266,470 +101,239 @@ const ProjectDetail = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'TBD';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'sale':
+        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
+      case 'listing':
+        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
+      default:
+        return 'bg-black/5 text-black border-black/20';
+    }
   };
 
-  const displayProject = {
-    ...finalProject,
-    progress: finalProject.progress || 85,
-    nextMilestone: finalProject.nextMilestone || 'Launch',
-    dueDate: finalProject.sale_date || finalProject.launch_date || finalProject.dueDate || 'TBD',
-    team: finalProject.team || finalProject.backers || [],
-    dependencies: finalProject.dependencies || [],
-    githubRepo: finalProject.githubRepo,
-    website: finalProject.website,
-    twitter: finalProject.social?.twitter,
-    telegram: finalProject.social?.telegram,
-    fundingType: finalProject.type === 'sale' ? 'Token Sale' : 'Token Listing',
-    totalFunding: finalProject.size_fdv || finalProject.expected_fdv,
-    milestones: finalProject.milestones || [],
-    recentUpdates: finalProject.recentUpdates || []
-  };
+  const categories = Array.isArray(project.category) ? project.category : [project.category];
+  const launchDate = project.sale_date || project.launch_date;
+  const fdvAmount = project.size_fdv || project.expected_fdv;
 
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
-      <header className="bg-white border-b border-black/10 px-4 md:px-6 py-4 md:py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 space-y-3 md:space-y-0">
-            <Link to="/">
-              <Button variant="ghost" className="font-medium hover:bg-black/5 transition-colors">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-            <div className="text-center lg:text-right bg-[#00ec97]/5 p-4 rounded-lg border border-[#00ec97]/20">
-              <div className="text-2xl md:text-3xl font-semibold text-[#00ec97] mb-1">{displayProject.progress}%</div>
-              <div className="text-sm text-black/60 font-medium">Complete</div>
-            </div>
-          </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+        {/* Header */}
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center text-black/60 hover:text-black mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            All Launches
+          </Link>
           
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between space-y-4 lg:space-y-0">
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-semibold text-black mb-3">{displayProject.name}</h1>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Badge variant="outline" className="font-medium border-black/20 text-black">
-                  {Array.isArray(displayProject.category) ? displayProject.category[0] : displayProject.category}
+          <div className="bg-white rounded-lg border border-black/10 p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-black mb-2">
+                  {project.name}
+                  {project.symbol && (
+                    <span className="text-xl text-black/60 ml-2">${project.symbol}</span>
+                  )}
+                </h1>
+                {project.description && (
+                  <p className="text-lg text-black/70 font-medium leading-relaxed">
+                    {project.description}
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <Badge className={`font-medium ${getStatusColor(project.status)}`}>
+                  {project.status}
                 </Badge>
-                <Badge className={`font-medium ${getStatusColor(displayProject.status)}`}>
-                  {displayProject.status.replace('-', ' ')}
-                </Badge>
-                {displayProject.fundingType && (
-                  <Badge variant="outline" className="font-medium border-[#17d9d4]/30 text-black bg-[#17d9d4]/5">
-                    {displayProject.fundingType}
+                {project.type && (
+                  <Badge className={`font-medium ${getTypeColor(project.type)}`}>
+                    {project.type}
                   </Badge>
                 )}
               </div>
-              <p className="text-black/70 font-medium max-w-3xl leading-relaxed mb-4">{displayProject.description}</p>
+            </div>
+
+            {/* Key Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {launchDate && (
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-5 w-5 text-black/60" />
+                  <div>
+                    <span className="font-semibold text-black">Launch Date:</span>
+                    <p className="text-black/80">{launchDate}</p>
+                  </div>
+                </div>
+              )}
               
-              <div className="flex flex-wrap items-center gap-3">
-                {displayProject.website && displayProject.website !== 'TBD' && (
-                  <a 
-                    href={displayProject.website} 
-                    target="_blank" 
+              {fdvAmount && (
+                <div className="flex items-center space-x-3">
+                  <DollarSign className="h-5 w-5 text-black/60" />
+                  <div>
+                    <span className="font-semibold text-black">FDV:</span>
+                    <p className="text-black/80">{fdvAmount}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Social Links */}
+              <div className="flex space-x-3">
+                {project.website && (
+                  <a
+                    href={project.website}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
+                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
                   >
-                    <Globe className="h-4 w-4" />
-                    <span>Website</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <Globe className="h-5 w-5 text-black/60" />
                   </a>
                 )}
-                {displayProject.githubRepo && (
-                  <a 
-                    href={displayProject.githubRepo} 
-                    target="_blank" 
+                {project.social?.twitter && (
+                  <a
+                    href={project.social.twitter}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
+                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
                   >
-                    <Github className="h-4 w-4" />
-                    <span>GitHub</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <Twitter className="h-5 w-5 text-black/60" />
                   </a>
                 )}
-                {displayProject.twitter && displayProject.twitter !== 'TBD' && (
-                  <a 
-                    href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`} 
-                    target="_blank" 
+                {project.social?.telegram && (
+                  <a
+                    href={project.social.telegram}
+                    target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
+                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Twitter</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-                {displayProject.telegram && displayProject.telegram !== 'TBD' && (
-                  <a 
-                    href={displayProject.telegram.startsWith('http') ? displayProject.telegram : `https://t.me/${displayProject.telegram.replace('@', '')}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Telegram</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <MessageCircle className="h-5 w-5 text-black/60" />
                   </a>
                 )}
               </div>
             </div>
+
+            {/* Categories */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat: string) => (
+                <Badge key={cat} variant="outline" className="bg-white border-black/20 text-black font-medium">
+                  {cat}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        <Tabs defaultValue={initialTab} className="space-y-6 md:space-y-8">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:w-[600px] bg-white border border-black/10">
-            <TabsTrigger value="overview" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="milestones" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Milestones</TabsTrigger>
-            <TabsTrigger value="team" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Team</TabsTrigger>
-            <TabsTrigger value="social" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Social</TabsTrigger>
-            <TabsTrigger value="updates" className="font-medium data-[state=active]:bg-[#00ec97] data-[state=active]:text-black text-xs md:text-sm">Updates</TabsTrigger>
+        {/* Content Tabs */}
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4 bg-white border border-black/10">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="backers">Backers</TabsTrigger>
+            <TabsTrigger value="social">Social</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Progress Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-semibold text-black">Overall Progress</span>
-                      <span className="text-sm text-black/70 font-medium">{displayProject.progress}%</span>
-                    </div>
-                    <Progress value={displayProject.progress} className="h-3" />
-                  </div>
-                  
-                  <div className="pt-3 border-t border-black/10">
-                    <div className="flex items-center space-x-3 text-sm mb-2">
-                      <Calendar className="h-4 w-4 text-black/60" />
-                      <span className="font-semibold text-black">Next Milestone:</span>
-                    </div>
-                    <div className="ml-7">
-                      <div className="font-medium text-black">{displayProject.nextMilestone}</div>
-                      <div className="text-sm text-black/60">Due: {formatDate(displayProject.dueDate)}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Key Features */}
+              {project.key_features && project.key_features.length > 0 && (
+                <Card className="bg-white border-black/10">
+                  <CardHeader>
+                    <CardTitle className="text-black">Key Features</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {project.key_features.map((feature, index) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <span className="w-1.5 h-1.5 bg-[#00ec97] rounded-full mt-2 flex-shrink-0"></span>
+                          <span className="text-black/80 font-medium">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Team</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center space-x-3 text-sm">
-                    <Users className="h-4 w-4 text-black/60" />
-                    <div>
-                      <div className="font-semibold text-black mb-2">Core Team</div>
-                      <div className="space-y-2">
-                        {displayProject.team.length > 0 ? (
-                          displayProject.team.slice(0, 5).map((member, index) => (
-                            <div key={index} className="flex items-center justify-between">
-                              <div className="text-black/70 font-medium">
-                                {typeof member === 'string' ? member : member.name}
-                              </div>
-                              {typeof member === 'object' && (member.github || member.twitter) && (
-                                <div className="flex space-x-1">
-                                  {member.github && (
-                                    <a 
-                                      href={member.github} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="p-1 hover:bg-black/5 rounded transition-colors"
-                                    >
-                                      <Github className="w-3 h-3 text-black/60" />
-                                    </a>
-                                  )}
-                                  {member.twitter && (
-                                    <a 
-                                      href={member.twitter} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="p-1 hover:bg-black/5 rounded transition-colors"
-                                    >
-                                      <MessageCircle className="w-3 h-3 text-black/60" />
-                                    </a>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-black/60">No team information available</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Token Utility */}
+              {project.token_utility && (
+                <Card className="bg-white border-black/10">
+                  <CardHeader>
+                    <CardTitle className="text-black">Token Utility</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-black/80 font-medium">{project.token_utility}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
 
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Key Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {displayProject.key_features && displayProject.key_features.length > 0 ? (
+          <TabsContent value="details" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Partnerships */}
+              {project.partnerships && project.partnerships.length > 0 && (
+                <Card className="bg-white border-black/10">
+                  <CardHeader>
+                    <CardTitle className="text-black">Partnerships</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {project.partnerships.map((partner, index) => (
+                        <Badge key={index} variant="outline" className="bg-[#00ec97]/5 border-[#00ec97]/30 text-black">
+                          {partner}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Traction */}
+              {project.traction && (
+                <Card className="bg-white border-black/10">
+                  <CardHeader>
+                    <CardTitle className="text-black">Traction</CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="space-y-2">
-                      {displayProject.key_features.map((feature, index) => (
-                        <div key={index} className="flex items-start space-x-2 text-sm">
-                          <div className="w-1.5 h-1.5 bg-[#00ec97] rounded-full mt-2 flex-shrink-0"></div>
-                          <span className="text-black/70 font-medium">{feature}</span>
+                      {Object.entries(project.traction).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="font-medium text-black/70 capitalize">{key.replace(/_/g, ' ')}:</span>
+                          <span className="font-semibold text-black">{value}</span>
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="text-sm text-black/60 font-medium">No key features listed</div>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
+          </TabsContent>
 
-            {displayProject.totalFunding && (
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
+          <TabsContent value="backers" className="space-y-4">
+            {project.backers && project.backers.length > 0 ? (
+              <Card className="bg-white border-black/10">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Funding Information</CardTitle>
+                  <CardTitle className="text-black">Backers & Investors</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-sm font-semibold text-black mb-2">Total FDV</div>
-                      <div className="text-2xl font-semibold text-[#00ec97]">{displayProject.totalFunding}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-black mb-2">Type</div>
-                      <div className="text-lg font-medium text-black">{displayProject.fundingType}</div>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {project.backers.map((backer, index) => (
+                      <div key={index} className="p-3 bg-black/5 rounded-lg">
+                        <span className="font-medium text-black">{backer}</span>
+                      </div>
+                    ))}
                   </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white border-black/10">
+                <CardContent className="p-8 text-center">
+                  <p className="text-black/60">No public backers information available.</p>
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="milestones">
-            <Card className="bg-white border-black/10 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-semibold text-black">Project Milestones</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {displayProject.milestones && displayProject.milestones.length > 0 ? (
-                  <MilestoneTimeline projects={[displayProject]} allProjects={allProjects} />
-                ) : (
-                  <div className="text-center py-8 text-black/60">
-                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">No milestones available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="team">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Team Members</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {displayProject.team.length > 0 ? (
-                      displayProject.team.map((member, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-colors">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-[#00ec97]/20 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-semibold text-black">
-                                {typeof member === 'string' ? member.charAt(0) : member.name.charAt(0)}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="font-medium text-black">
-                                {typeof member === 'string' ? member : member.name}
-                              </div>
-                              <div className="text-sm text-black/60">
-                                {typeof member === 'object' && member.role ? member.role : 'Core Developer'}
-                              </div>
-                            </div>
-                          </div>
-                          {typeof member === 'object' && (member.github || member.twitter) && (
-                            <div className="flex space-x-2">
-                              {member.github && (
-                                <a 
-                                  href={member.github} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
-                                >
-                                  <Github className="w-4 h-4 text-black/60" />
-                                </a>
-                              )}
-                              {member.twitter && (
-                                <a 
-                                  href={member.twitter} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
-                                >
-                                  <MessageCircle className="w-4 h-4 text-black/60" />
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-black/60">
-                        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p className="font-medium">No team information available</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Project Links</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {displayProject.website && displayProject.website !== 'TBD' && (
-                      <a href={displayProject.website} target="_blank" rel="noopener noreferrer" 
-                         className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
-                        <Globe className="h-5 w-5 text-black/60" />
-                        <div className="flex-1">
-                          <div className="font-medium text-black">Website</div>
-                          <div className="text-sm text-black/60">Official project website</div>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-black/40" />
-                      </a>
-                    )}
-                    {displayProject.githubRepo && (
-                      <a href={displayProject.githubRepo} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
-                        <Github className="h-5 w-5 text-black/60" />
-                        <div className="flex-1">
-                          <div className="font-medium text-black">GitHub Repository</div>
-                          <div className="text-sm text-black/60">Source code and documentation</div>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-black/40" />
-                      </a>
-                    )}
-                    {displayProject.twitter && displayProject.twitter !== 'TBD' && (
-                      <a href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
-                         className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
-                        <MessageCircle className="h-5 w-5 text-black/60" />
-                        <div className="flex-1">
-                          <div className="font-medium text-black">Twitter</div>
-                          <div className="text-sm text-black/60">Follow for updates</div>
-                        </div>
-                        <ExternalLink className="h-4 w-4 text-black/40" />
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="social">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Twitter Feed */}
-              {displayProject.twitter && (
-                <TwitterFeed twitterHandle={displayProject.twitter} />
-              )}
-              
-              {/* Social Links */}
-              <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Social Media</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {displayProject.twitter && displayProject.twitter !== 'TBD' && (
-                      <a 
-                        href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-3 p-4 bg-[#1da1f2]/5 rounded-lg hover:bg-[#1da1f2]/10 transition-all hover:scale-[1.02] border border-[#1da1f2]/20"
-                      >
-                        <div className="w-12 h-12 bg-[#1da1f2]/20 rounded-full flex items-center justify-center">
-                          <MessageCircle className="h-6 w-6 text-[#1da1f2]" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-black">Twitter</div>
-                          <div className="text-sm text-black/60">
-                            @{displayProject.twitter.replace('@', '').replace('https://twitter.com/', '')}
-                          </div>
-                        </div>
-                        <ExternalLink className="h-5 w-5 text-black/40" />
-                      </a>
-                    )}
-                    
-                    {displayProject.telegram && displayProject.telegram !== 'TBD' && (
-                      <a 
-                        href={displayProject.telegram.startsWith('http') ? displayProject.telegram : `https://t.me/${displayProject.telegram.replace('@', '')}`}
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-3 p-4 bg-[#0088cc]/5 rounded-lg hover:bg-[#0088cc]/10 transition-all hover:scale-[1.02] border border-[#0088cc]/20"
-                      >
-                        <div className="w-12 h-12 bg-[#0088cc]/20 rounded-full flex items-center justify-center">
-                          <MessageCircle className="h-6 w-6 text-[#0088cc]" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-black">Telegram</div>
-                          <div className="text-sm text-black/60">
-                            @{displayProject.telegram.replace('@', '').replace('https://t.me/', '')}
-                          </div>
-                        </div>
-                        <ExternalLink className="h-5 w-5 text-black/40" />
-                      </a>
-                    )}
-                    
-                    {(!displayProject.twitter || displayProject.twitter === 'TBD') && (!displayProject.telegram || displayProject.telegram === 'TBD') && (
-                      <div className="text-center py-8 text-black/60">
-                        <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p className="font-medium">No social media links available</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="updates">
-            <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-black">Recent Updates</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {displayProject.recentUpdates && displayProject.recentUpdates.length > 0 ? (
-                  <div className="space-y-4">
-                    {displayProject.recentUpdates.map((update, index) => (
-                      <div key={index} className="border-l-2 border-[#00ec97] pl-4 pb-4 hover:bg-black/5 p-3 rounded-r-lg transition-colors">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 space-y-1 md:space-y-0">
-                          <h4 className="font-semibold text-black">{update.title}</h4>
-                          <span className="text-sm text-black/60 font-medium">{formatDate(update.date)}</span>
-                        </div>
-                        <p className="text-black/70 font-medium leading-relaxed">{update.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-black/60">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">No recent updates available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="social" className="space-y-4">
+            <TwitterFeed projectName={project.name} />
           </TabsContent>
         </Tabs>
       </div>

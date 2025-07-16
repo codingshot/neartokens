@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from 'react';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +84,7 @@ const Index = () => {
   }, [allProjects]);
 
   const filteredProjects = useMemo(() => {
-    return allProjects.filter(project => {
+    let filtered = allProjects.filter(project => {
       const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            project.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
@@ -98,7 +99,25 @@ const Index = () => {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesType;
     });
+
+    // Sort by upcoming launches first
+    return filtered.sort((a, b) => {
+      const dateA = a.sale_date || a.launch_date || '';
+      const dateB = b.sale_date || b.launch_date || '';
+      
+      if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+      if (b.status === 'upcoming' && a.status !== 'upcoming') return 1;
+      
+      return dateA.localeCompare(dateB);
+    });
   }, [allProjects, searchTerm, selectedCategory, selectedStatus, selectedType]);
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedStatus('all');
+    setSelectedType('all');
+  };
 
   if (isLoading) {
     return (
@@ -339,6 +358,14 @@ const Index = () => {
                     </button>
                   </Badge>
                 )}
+                <Button
+                  onClick={clearAllFilters}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                >
+                  Clear All
+                </Button>
               </div>
             )}
           </div>
@@ -355,7 +382,7 @@ const Index = () => {
           </div>
           
           <div className="p-4 md:p-6">
-            <ProjectExplorer projects={filteredProjects} viewMode={viewMode as 'cards' | 'list'} />
+            <ProjectExplorer projects={filteredProjects} viewMode={viewMode} />
           </div>
         </div>
       </div>

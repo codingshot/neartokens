@@ -1,8 +1,10 @@
 
 import { useState } from 'react';
 import { ProjectCard } from '@/components/ProjectCard';
+import { CalendarView } from '@/components/CalendarView';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Calendar, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -23,11 +25,11 @@ interface Project {
 
 interface ProjectExplorerProps {
   projects: Project[];
-  viewMode?: 'cards' | 'list';
+  viewMode?: 'cards' | 'list' | 'calendar';
 }
 
 export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplorerProps) => {
-  const [sortBy, setSortBy] = useState<'name' | 'date' | 'status'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'date' | 'status'>('date');
 
   // Sort projects
   const sortedProjects = [...projects].sort((a, b) => {
@@ -37,6 +39,9 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
       case 'date':
         const dateA = a.sale_date || a.launch_date || '';
         const dateB = b.sale_date || b.launch_date || '';
+        // Sort upcoming first, then by date
+        if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
+        if (b.status === 'upcoming' && a.status !== 'upcoming') return 1;
         return dateA.localeCompare(dateB);
       case 'status':
         return a.status.localeCompare(b.status);
@@ -73,10 +78,14 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
         <div className="text-black/40 mb-4">
           <Calendar className="h-16 w-16 mx-auto" />
         </div>
-        <h3 className="text-lg font-semibold text-black mb-2">No tokens found</h3>
-        <p className="text-black/60">Try adjusting your search or filters to find more tokens.</p>
+        <h3 className="text-lg font-semibold text-black mb-2">No projects found</h3>
+        <p className="text-black/60 mb-4">Try adjusting your search or filters to find more projects.</p>
       </div>
     );
+  }
+
+  if (viewMode === 'calendar') {
+    return <CalendarView projects={sortedProjects} />;
   }
 
   if (viewMode === 'list') {
@@ -85,16 +94,16 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
         <div className="flex flex-wrap gap-2 mb-4">
           <span className="text-sm font-medium text-black/70">Sort by:</span>
           <button
+            onClick={() => setSortBy('date')}
+            className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+          >
+            Launch Date
+          </button>
+          <button
             onClick={() => setSortBy('name')}
             className={`text-xs px-2 py-1 rounded ${sortBy === 'name' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
           >
             Name
-          </button>
-          <button
-            onClick={() => setSortBy('date')}
-            className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
-          >
-            Date
           </button>
           <button
             onClick={() => setSortBy('status')}
@@ -144,12 +153,12 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
 
                       <div className="flex flex-wrap gap-1 mb-2">
                         {categories.slice(0, 3).map((cat: string) => (
-                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
                             {cat}
                           </Badge>
                         ))}
                         {categories.length > 3 && (
-                          <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                          <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
                             +{categories.length - 3}
                           </Badge>
                         )}
@@ -192,16 +201,16 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="text-sm font-medium text-black/70">Sort by:</span>
         <button
+          onClick={() => setSortBy('date')}
+          className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
+        >
+          Launch Date
+        </button>
+        <button
           onClick={() => setSortBy('name')}
           className={`text-xs px-2 py-1 rounded ${sortBy === 'name' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
         >
           Name
-        </button>
-        <button
-          onClick={() => setSortBy('date')}
-          className={`text-xs px-2 py-1 rounded ${sortBy === 'date' ? 'bg-[#00ec97] text-black' : 'bg-black/10 text-black/70 hover:bg-black/20'}`}
-        >
-          Date
         </button>
         <button
           onClick={() => setSortBy('status')}
