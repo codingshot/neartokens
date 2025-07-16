@@ -7,6 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
+interface BackerData {
+  name: string;
+  logo?: string;
+  link?: string;
+}
+
 interface TokenData {
   id: string;
   name: string;
@@ -19,7 +25,7 @@ interface TokenData {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
-  backers?: string[];
+  backers?: (string | BackerData)[];
   social?: {
     twitter?: string;
     telegram?: string;
@@ -133,7 +139,17 @@ const ProjectDetail = () => {
   // Check if data exists for each section
   const hasOverviewData = project.key_features?.length > 0 || project.token_utility;
   const hasDetailsData = project.partnerships?.length > 0 || project.traction;
+  
+  // Update backers check to handle both string and object formats
   const hasBackersData = project.backers?.length > 0;
+  
+  // Normalize backers data to handle both string and object formats
+  const normalizedBackers = project.backers?.map(backer => {
+    if (typeof backer === 'string') {
+      return { name: backer, logo: '', link: '' };
+    }
+    return backer;
+  }) || [];
 
   // Check if social links exist
   const hasSocialLinks = project.website || project.social?.twitter || project.social?.telegram;
@@ -379,11 +395,43 @@ const ProjectDetail = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {project.backers?.map((backer, index) => (
-                        <div key={index} className="p-3 bg-black/5 rounded-lg">
-                          <span className="font-medium text-black">{backer}</span>
-                        </div>
-                      ))}
+                      {normalizedBackers.map((backer, index) => {
+                        const BackerContent = () => (
+                          <div className="p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-colors flex items-center space-x-3">
+                            {backer.logo && (
+                              <img 
+                                src={backer.logo} 
+                                alt={`${backer.name} logo`}
+                                className="w-8 h-8 object-contain flex-shrink-0"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <span className="font-medium text-black">{backer.name}</span>
+                          </div>
+                        );
+
+                        if (backer.link) {
+                          return (
+                            <a
+                              key={index}
+                              href={backer.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block"
+                            >
+                              <BackerContent />
+                            </a>
+                          );
+                        }
+
+                        return (
+                          <div key={index}>
+                            <BackerContent />
+                          </div>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
