@@ -63,7 +63,14 @@ export const Footer = () => {
           <div className="text-center md:text-left">
             <h4 className="text-sm font-semibold text-black mb-3">Links</h4>
             <div className="space-y-2">
-              <SubmitTokenDialog />
+              <a 
+                href="https://nearlend.org/blog" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block text-sm text-black/60 hover:text-[#17d9d4] transition-colors"
+              >
+                Blog
+              </a>
               
               <a 
                 href={githubService.getRepoUrl()} 

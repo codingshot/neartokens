@@ -19,7 +19,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <BrowserRouter>
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<LoadingSpinner centered />}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/project/:id" element={<ProjectDetail />} />

@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 interface TokenData {
   id: string;
@@ -57,11 +57,7 @@ const ProjectDetail = () => {
   console.log('ProjectDetail - Tokens Data:', tokensData);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ec97]"></div>
-      </div>
-    );
+    return <LoadingSpinner centered />;
   }
 
   if (error) {
