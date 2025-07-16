@@ -210,7 +210,7 @@ export default function Index() {
       <section className="bg-white border-b border-black/10 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold text-black mb-3">
-            Track tokens on NEAR Protocol
+            Track upcoming tokens on NEAR Protocol
           </h2>
           <p className="text-base sm:text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
