@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -79,139 +80,148 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   });
 
   return (
-    <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group flex flex-col h-full">
-      <Link to={`/project/${project.id}`} className="flex flex-col flex-1">
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center space-x-3">
-                {project.logo && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
-                    <AvatarFallback className="text-xs bg-black/10 text-black/60">
-                      {project.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+    <TooltipProvider>
+      <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group flex flex-col h-full">
+        <Link to={`/project/${project.id}`} className="flex flex-col flex-1">
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center space-x-3">
+                  {project.logo && (
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                      <AvatarFallback className="text-xs bg-black/10 text-black/60">
+                        {project.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1 cursor-pointer">
+                          {project.name}
+                        </h3>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{project.name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    {project.symbol && (
+                      <span className="text-sm text-black/60 font-medium">
+                        ${project.symbol}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 ml-4">
+                <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
+                  {project.status}
+                </Badge>
+                {project.type && (
+                  <Badge className={`font-medium text-xs ${getTypeColor(project.type)}`}>
+                    {project.type}
+                  </Badge>
                 )}
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
-                    {project.name}
-                  </h3>
-                  {project.symbol && (
-                    <span className="text-sm text-black/60 font-medium">
-                      ${project.symbol}
-                    </span>
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-4 flex-1">
+            {/* Description */}
+            {project.description && (
+              <p className="text-sm text-black/70 font-medium line-clamp-2 leading-relaxed">
+                {project.description}
+              </p>
+            )}
+
+            {/* Launch Date */}
+            <div className="flex items-center space-x-3 text-sm">
+              <Calendar className="h-4 w-4 text-black/60 flex-shrink-0" />
+              <span className="font-semibold text-black">Launch:</span>
+              <span className="text-black/80 font-medium">{launchDate}</span>
+            </div>
+
+            {/* Backers */}
+            {normalizedBackers.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 text-sm">
+                  <Users className="h-4 w-4 text-black/60 flex-shrink-0" />
+                  <span className="font-semibold text-black">Backers:</span>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {normalizedBackers.slice(0, 3).map((backer, index) => (
+                    <Badge 
+                      key={`${backer.name}-${index}`}
+                      variant="outline" 
+                      className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6 flex items-center gap-1"
+                    >
+                      {backer.logo ? (
+                        <Avatar className="h-3 w-3">
+                          <AvatarImage src={backer.logo} alt={backer.name} />
+                          <AvatarFallback className="text-[8px] bg-black/10">
+                            {backer.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="h-3 w-3 rounded-full bg-black/10 flex items-center justify-center">
+                          <span className="text-[8px] font-medium text-black/60">
+                            {backer.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <span className="truncate max-w-[80px]">{backer.name}</span>
+                    </Badge>
+                  ))}
+                  {normalizedBackers.length > 3 && (
+                    <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6">
+                      +{normalizedBackers.length - 3}
+                    </Badge>
                   )}
                 </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-1 ml-4">
-              <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
-                {project.status}
-              </Badge>
-              {project.type && (
-                <Badge className={`font-medium text-xs ${getTypeColor(project.type)}`}>
-                  {project.type}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-4 flex-1">
-          {/* Description */}
-          {project.description && (
-            <p className="text-sm text-black/70 font-medium line-clamp-2 leading-relaxed">
-              {project.description}
-            </p>
-          )}
+            )}
 
-          {/* Launch Date */}
-          <div className="flex items-center space-x-3 text-sm">
-            <Calendar className="h-4 w-4 text-black/60 flex-shrink-0" />
-            <span className="font-semibold text-black">Launch:</span>
-            <span className="text-black/80 font-medium">{launchDate}</span>
-          </div>
-
-          {/* Backers */}
-          {normalizedBackers.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 text-sm">
-                <Users className="h-4 w-4 text-black/60 flex-shrink-0" />
-                <span className="font-semibold text-black">Backers:</span>
-              </div>
+            {/* Categories - Now positioned after launch/backers info */}
+            {categories.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {normalizedBackers.slice(0, 3).map((backer, index) => (
+                {categories.slice(0, 4).map((cat: string) => (
                   <Badge 
-                    key={`${backer.name}-${index}`}
+                    key={cat} 
                     variant="outline" 
-                    className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6 flex items-center gap-1"
+                    className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10 transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onCategoryClick?.(cat);
+                    }}
                   >
-                    {backer.logo ? (
-                      <Avatar className="h-3 w-3">
-                        <AvatarImage src={backer.logo} alt={backer.name} />
-                        <AvatarFallback className="text-[8px] bg-black/10">
-                          {backer.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="h-3 w-3 rounded-full bg-black/10 flex items-center justify-center">
-                        <span className="text-[8px] font-medium text-black/60">
-                          {backer.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <span className="truncate max-w-[80px]">{backer.name}</span>
+                    {cat}
                   </Badge>
                 ))}
-                {normalizedBackers.length > 3 && (
-                  <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1 h-6">
-                    +{normalizedBackers.length - 3}
+                {categories.length > 4 && (
+                  <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
+                    +{categories.length - 4}
                   </Badge>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Categories - Now positioned after launch/backers info */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {categories.slice(0, 4).map((cat: string) => (
-                <Badge 
-                  key={cat} 
-                  variant="outline" 
-                  className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10 transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onCategoryClick?.(cat);
-                  }}
-                >
-                  {cat}
-                </Badge>
-              ))}
-              {categories.length > 4 && (
-                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
-                  +{categories.length - 4}
-                </Badge>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Link>
-      
-      {/* View Details Button - Always at bottom */}
-      <div className="px-6 pb-6 mt-auto">
-        <Link to={`/project/${project.id}`}>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full font-medium border-black/20 hover:border-[#00ec97] hover:bg-[#00ec97]/5 transition-all duration-200"
-          >
-            View Details
-          </Button>
+            )}
+          </CardContent>
         </Link>
-      </div>
-    </Card>
+        
+        {/* View Details Button - Always at bottom */}
+        <div className="px-6 pb-6 mt-auto">
+          <Link to={`/project/${project.id}`}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full font-medium border-black/20 hover:border-[#00ec97] hover:bg-[#00ec97]/5 transition-all duration-200"
+            >
+              View Details
+            </Button>
+          </Link>
+        </div>
+      </Card>
+    </TooltipProvider>
   );
 };
