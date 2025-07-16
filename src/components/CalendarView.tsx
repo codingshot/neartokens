@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +25,7 @@ interface CalendarViewProps {
 }
 
 export const CalendarView = ({ projects }: CalendarViewProps) => {
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedPeriod, setSelectedPeriod] = useState('all');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // Filter projects that have launch dates
@@ -34,21 +33,28 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
     project.sale_date || project.launch_date
   );
 
-  // Group projects by month/year
-  const projectsByMonth = projectsWithDates.reduce((acc, project) => {
+  // Group projects by quarters and periods
+  const projectsByPeriod = projectsWithDates.reduce((acc, project) => {
     const dateStr = project.sale_date || project.launch_date;
     if (!dateStr) return acc;
     
     try {
       const date = new Date(dateStr);
-      const month = date.getMonth();
       const year = date.getFullYear();
-      const key = `${year}-${month}`;
+      const month = date.getMonth();
+      const quarter = Math.floor(month / 3) + 1;
       
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(project);
+      const allKey = 'all';
+      const yearKey = `${year}`;
+      const quarterKey = `${year}-Q${quarter}`;
+      
+      if (!acc[allKey]) acc[allKey] = [];
+      if (!acc[yearKey]) acc[yearKey] = [];
+      if (!acc[quarterKey]) acc[quarterKey] = [];
+      
+      acc[allKey].push(project);
+      acc[yearKey].push(project);
+      acc[quarterKey].push(project);
     } catch (error) {
       console.warn('Invalid date format:', dateStr);
     }
@@ -56,13 +62,38 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
     return acc;
   }, {} as Record<string, Project[]>);
 
-  const currentMonthKey = `${selectedYear}-${selectedMonth}`;
-  const currentMonthProjects = projectsByMonth[currentMonthKey] || [];
+  const currentPeriodProjects = projectsByPeriod[selectedPeriod] || [];
 
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+  const getPeriodOptions = () => {
+    const options = [{ value: 'all', label: 'All Time' }];
+    
+    // Add years
+    const years = [...new Set(projectsWithDates.map(p => {
+      const dateStr = p.sale_date || p.launch_date;
+      if (dateStr) {
+        try {
+          return new Date(dateStr).getFullYear();
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }).filter(Boolean))].sort((a, b) => b - a);
+    
+    years.forEach(year => {
+      options.push({ value: `${year}`, label: `${year}` });
+      
+      // Add quarters for each year
+      for (let q = 1; q <= 4; q++) {
+        const quarterKey = `${year}-Q${q}`;
+        if (projectsByPeriod[quarterKey]?.length > 0) {
+          options.push({ value: quarterKey, label: `Q${q} ${year}` });
+        }
+      }
+    });
+    
+    return options;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -99,7 +130,7 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
           variant="outline"
           className="text-sm"
         >
-          Clear All Filters
+          Clear Filters
         </Button>
       </div>
     );
@@ -107,7 +138,7 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Month/Year Selector */}
+      {/* Period Selector */}
       <Card className="bg-white border-black/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-black">
@@ -118,35 +149,26 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
         <CardContent>
           <div className="flex flex-wrap gap-2 mb-4">
             <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
               className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
             >
-              {months.map((month, index) => (
-                <option key={index} value={index}>{month}</option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-            >
-              {[2024, 2025, 2026].map(year => (
-                <option key={year} value={year}>{year}</option>
+              {getPeriodOptions().map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </div>
           
           <p className="text-sm text-black/60">
-            Viewing {months[selectedMonth]} {selectedYear} - {currentMonthProjects.length} launches
+            Viewing {selectedPeriod === 'all' ? 'All Time' : selectedPeriod} - {currentPeriodProjects.length} launches
           </p>
         </CardContent>
       </Card>
 
-      {/* Projects for Selected Month */}
-      {currentMonthProjects.length > 0 ? (
+      {/* Projects for Selected Period */}
+      {currentPeriodProjects.length > 0 ? (
         <div className="grid gap-4">
-          {currentMonthProjects.map((project) => {
+          {currentPeriodProjects.map((project) => {
             const categories = Array.isArray(project.category) ? project.category : [project.category];
             const launchDate = project.sale_date || project.launch_date;
             
@@ -209,8 +231,15 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
         <Card className="bg-white border-black/10">
           <CardContent className="p-8 text-center">
             <CalendarDays className="h-12 w-12 text-black/40 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-black mb-2">No launches in {months[selectedMonth]} {selectedYear}</h3>
-            <p className="text-black/60">Try selecting a different month or clearing your filters.</p>
+            <h3 className="text-lg font-semibold text-black mb-2">No launches found</h3>
+            <p className="text-black/60 mb-4">No projects found for the selected period.</p>
+            <Button 
+              onClick={() => setSelectedPeriod('all')}
+              variant="outline"
+              className="text-sm"
+            >
+              Clear Filters
+            </Button>
           </CardContent>
         </Card>
       )}

@@ -80,17 +80,38 @@ const ProjectDetail = () => {
   console.log('ProjectDetail - All Projects:', allProjects);
   console.log('ProjectDetail - All Project IDs:', allProjects.map(p => p.id));
   
-  // Try exact match first, then fallback to name-based matching
-  let project = allProjects.find(p => p.id === id);
+  // Enhanced ID matching with multiple fallback strategies
+  let project = null;
   
-  if (!project && id) {
-    // Try to find by name (case-insensitive, with underscores)
-    const normalizedId = id.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    project = allProjects.find(p => {
-      const normalizedProjectId = p.id.toLowerCase().replace(/[^a-z0-9]/g, '_');
-      const normalizedProjectName = p.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-      return normalizedProjectId === normalizedId || normalizedProjectName === normalizedId;
-    });
+  if (id) {
+    // Strategy 1: Exact match
+    project = allProjects.find(p => p.id === id);
+    
+    // Strategy 2: Case-insensitive exact match
+    if (!project) {
+      project = allProjects.find(p => p.id.toLowerCase() === id.toLowerCase());
+    }
+    
+    // Strategy 3: Remove underscores and match
+    if (!project) {
+      const normalizedId = id.replace(/_/g, '').toLowerCase();
+      project = allProjects.find(p => p.id.replace(/_/g, '').toLowerCase() === normalizedId);
+    }
+    
+    // Strategy 4: Match by name (case-insensitive)
+    if (!project) {
+      const normalizedId = id.replace(/_/g, ' ').toLowerCase();
+      project = allProjects.find(p => p.name.toLowerCase() === normalizedId);
+    }
+    
+    // Strategy 5: Partial name match
+    if (!project) {
+      const searchTerm = id.replace(/_/g, ' ').toLowerCase();
+      project = allProjects.find(p => 
+        p.name.toLowerCase().includes(searchTerm) || 
+        p.id.toLowerCase().includes(searchTerm)
+      );
+    }
   }
 
   console.log('ProjectDetail - Found Project:', project);
@@ -101,8 +122,11 @@ const ProjectDetail = () => {
         <div className="text-center">
           <h1 className="text-xl font-semibold text-black mb-2">Project not found</h1>
           <p className="text-black/60 mb-4">The project you're looking for doesn't exist.</p>
-          <p className="text-sm text-black/50 mb-4">Looking for ID: {id}</p>
-          <p className="text-sm text-black/50 mb-4">Available IDs: {allProjects.map(p => p.id).join(', ')}</p>
+          <p className="text-sm text-black/50 mb-2">Looking for ID: {id}</p>
+          <p className="text-sm text-black/50 mb-4">Available projects:</p>
+          <div className="text-xs text-black/40 mb-4 max-w-lg">
+            {allProjects.map(p => `${p.name} (${p.id})`).join(', ')}
+          </div>
           <Link to="/">
             <Button variant="outline">Back to All Launches</Button>
           </Link>

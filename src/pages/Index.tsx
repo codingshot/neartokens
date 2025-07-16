@@ -5,16 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Search, Grid3X3, List, Filter, TrendingUp, Clock, Users } from 'lucide-react';
+import { Calendar, Search, Grid3X3, List, Filter, TrendingUp, Clock, Users, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
 
 interface TokenData {
   id: string;
@@ -168,15 +161,15 @@ const Index = () => {
     );
   }
 
-  const upcomingProjects = allProjects.filter(p => p.status === 'upcoming').slice(0, 12);
+  const upcomingProjects = allProjects.filter(p => p.status === 'upcoming').slice(0, 20);
 
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
-      {/* Hero Section */}
+      {/* Hero Section - Reduced padding */}
       <section className="bg-white border-b border-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-3">
               NEAR Token Season <span className="text-[#00ec97]">2025</span>
             </h1>
             <p className="text-lg md:text-xl text-black/70 font-medium max-w-3xl mx-auto leading-relaxed">
@@ -185,8 +178,18 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+          {/* Navigation */}
+          <div className="flex justify-center mb-6">
+            <Link to="/blog">
+              <Button variant="outline" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Blog
+              </Button>
+            </Link>
+          </div>
+
+          {/* Stats Cards - Reduced spacing */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card className="bg-[#00ec97]/5 border-[#00ec97]/20 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-4 md:p-6 text-center">
                 <TrendingUp className="h-8 w-8 text-[#00ec97] mx-auto mb-2" />
@@ -220,54 +223,42 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Upcoming Tokens Ticker */}
+      {/* Upcoming Tokens Ticker - Constantly revolving */}
       {upcomingProjects.length > 0 && (
-        <div className="w-full bg-black/5 border-b border-black/10 py-3">
-          <div className="max-w-full">
-            <div className="flex items-center mb-2 px-6">
-              <Clock className="h-4 w-4 mr-2 text-black/60" />
-              <h3 className="text-sm font-semibold text-black">Upcoming Tokens</h3>
+        <div className="w-full bg-black/5 border-b border-black/10 py-2 overflow-hidden">
+          <div className="flex items-center mb-1 px-6">
+            <Clock className="h-4 w-4 mr-2 text-black/60" />
+            <h3 className="text-sm font-semibold text-black">Upcoming Tokens</h3>
+          </div>
+          
+          <div className="relative">
+            <div className="animate-scroll flex whitespace-nowrap">
+              {/* Duplicate items for seamless loop */}
+              {[...upcomingProjects, ...upcomingProjects, ...upcomingProjects].map((project, index) => {
+                const launchDate = project.sale_date || project.launch_date || 'TBD';
+                const symbol = project.symbol || 'TBD';
+                
+                return (
+                  <Link
+                    key={`${project.id}-${index}`}
+                    to={`/project/${project.id}`}
+                    className="inline-flex items-center bg-white rounded-lg border border-black/10 p-2 mx-2 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 flex-shrink-0"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <div className="font-semibold text-sm text-black">
+                        {project.name}
+                      </div>
+                      <div className="text-xs text-black/60 font-medium">
+                        ${symbol}
+                      </div>
+                      <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-2 py-0.5">
+                        {launchDate}
+                      </Badge>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
-            
-            <Carousel
-              opts={{
-                align: "start",
-                loop: true,
-                skipSnaps: false,
-                dragFree: true,
-              }}
-              className="w-full"
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {upcomingProjects.map((project) => {
-                  const launchDate = project.sale_date || project.launch_date || 'TBD';
-                  const symbol = project.symbol || 'TBD';
-                  
-                  return (
-                    <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-auto">
-                      <Link
-                        to={`/project/${project.id}`}
-                        className="flex items-center bg-white rounded-lg border border-black/10 p-3 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 whitespace-nowrap"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="font-semibold text-sm text-black">
-                            {project.name}
-                          </div>
-                          <div className="text-xs text-black/60 font-medium">
-                            ${symbol}
-                          </div>
-                          <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-2 py-1">
-                            {launchDate}
-                          </Badge>
-                        </div>
-                      </Link>
-                    </CarouselItem>
-                  );
-                })}
-              </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
-            </Carousel>
           </div>
         </div>
       )}
