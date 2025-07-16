@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -219,9 +218,9 @@ export default function Index() {
           <div className="space-y-4">
             {/* ALL CONTROLS IN ONE ROW - Desktop: all inline with proper spacing, Mobile: responsive grid */}
             <div className="flex flex-col gap-3">
-              {/* Desktop: Single row with all controls and better spacing */}
-              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-3 w-full max-w-6xl mx-auto">
-                <div className="w-[220px] flex-shrink-0">
+              {/* Desktop: Single row with all controls and better spacing - increased width for MultiSelect */}
+              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-4 w-full max-w-6xl mx-auto">
+                <div className="w-[240px] flex-shrink-0">
                   <Input
                     type="text"
                     placeholder="Search for tokens..."
@@ -231,7 +230,7 @@ export default function Index() {
                   />
                 </div>
                 
-                <div className="w-[120px] flex-shrink-0">
+                <div className="w-[140px] flex-shrink-0">
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Categories" />
@@ -245,7 +244,7 @@ export default function Index() {
                   </Select>
                 </div>
                 
-                <div className="w-[120px] flex-shrink-0">
+                <div className="w-[160px] flex-shrink-0">
                   <MultiSelect
                     options={allBackers}
                     selected={selectedBackers}
@@ -255,7 +254,7 @@ export default function Index() {
                   />
                 </div>
 
-                <div className="w-[100px] flex-shrink-0">
+                <div className="w-[120px] flex-shrink-0">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="w-full">
