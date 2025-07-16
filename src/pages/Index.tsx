@@ -12,7 +12,7 @@ import { AnalyticsOverview } from '@/components/AnalyticsOverview';
 import { ProjectStatusChart } from '@/components/ProjectStatusChart';
 import { TwitterFeed } from '@/components/TwitterFeed';
 import { Footer } from '@/components/Footer';
-import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink } from 'lucide-react';
+import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -148,9 +148,9 @@ export default function Index() {
             </Link>
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
-                <Link to="/submit" className="flex items-center space-x-2">
-                  <Zap className="h-4 w-4" />
-                  <span>Submit Token</span>
+                <Link to="/blog" className="flex items-center space-x-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">Blog</span>
                 </Link>
               </Button>
             </div>
@@ -167,7 +167,7 @@ export default function Index() {
           <p className="text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
-          <div className="flex items-center justify-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
             <Input
               type="text"
               placeholder="Search for tokens..."
@@ -176,7 +176,7 @@ export default function Index() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -187,7 +187,8 @@ export default function Index() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={clearFilters}>
-              Clear Filters
+              <span className="sm:hidden">Clear</span>
+              <span className="hidden sm:inline">Clear Filters</span>
             </Button>
           </div>
         </div>
@@ -229,18 +230,18 @@ export default function Index() {
           <h3 className="text-xl font-semibold text-black">
             Token Launches
           </h3>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button variant="outline" size="sm" onClick={() => setViewMode('cards')}>
-              <Search className="h-4 w-4 mr-2" />
-              <span>Cards</span>
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline sm:ml-2">Cards</span>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setViewMode('list')}>
-              <Filter className="h-4 w-4 mr-2" />
-              <span>List</span>
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline sm:ml-2">List</span>
             </Button>
             <Button variant="outline" size="sm" onClick={() => setViewMode('calendar')}>
-              <Calendar className="h-4 w-4 mr-2" />
-              <span>Calendar</span>
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline sm:ml-2">Calendar</span>
             </Button>
           </div>
         </div>

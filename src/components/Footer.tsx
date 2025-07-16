@@ -1,12 +1,17 @@
+
 import { Github } from 'lucide-react';
 import { GitHubService } from '@/services/githubService';
 import { Link } from 'react-router-dom';
 import { SubmitTokenDialog } from './SubmitTokenDialog';
+
 export const Footer = () => {
   const githubService = GitHubService.getInstance();
-  return <footer className="bg-white border-t border-black/10 mt-16">
+  
+  return (
+    <footer className="bg-white border-t border-black/10 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="flex flex-col space-y-6 sm:space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand Section */}
           <div className="text-center md:text-left">
             <Link to="/" className="hover:opacity-80 transition-opacity">
               <h3 className="text-lg font-semibold text-black mb-2">NEAR Tokens</h3>
@@ -15,26 +20,78 @@ export const Footer = () => {
               Track token launches on NEAR Protocol ecosystem
             </p>
           </div>
-          
-          <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
-            <SubmitTokenDialog />
-            
-            <a href={githubService.getRepoUrl()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center sm:justify-start space-x-2 text-black hover:text-[#00ec97] transition-colors font-medium">
-              <Github className="h-5 w-5" />
-              <span>GitHub</span>
-            </a>
-            
-            <Link to="/landing" className="flex items-center justify-center sm:justify-start space-x-2 text-black hover:text-[#17d9d4] transition-colors font-medium">
-              <span>About</span>
-            </Link>
 
-            <Link to="/updates" className="flex items-center justify-center sm:justify-start space-x-2 text-black hover:text-[#17d9d4] transition-colors font-medium">
-              <span>Updates</span>
-            </Link>
+          {/* DeFi Section */}
+          <div className="text-center md:text-left">
+            <h4 className="text-sm font-semibold text-black mb-3">DeFi</h4>
+            <div className="space-y-2">
+              <a 
+                href="https://rhea.finance" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block text-sm text-black/60 hover:text-[#00ec97] transition-colors"
+              >
+                Rhea Finance
+              </a>
+              <a 
+                href="https://near-intents.org" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block text-sm text-black/60 hover:text-[#00ec97] transition-colors"
+              >
+                NEAR Intents
+              </a>
+            </div>
+          </div>
+
+          {/* Projects Section */}
+          <div className="text-center md:text-left">
+            <h4 className="text-sm font-semibold text-black mb-3">Projects</h4>
+            <div className="space-y-2">
+              <a 
+                href="https://nearcatalog.xyz" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block text-sm text-black/60 hover:text-[#00ec97] transition-colors"
+              >
+                NEAR Catalog
+              </a>
+            </div>
+          </div>
+
+          {/* Links Section */}
+          <div className="text-center md:text-left">
+            <h4 className="text-sm font-semibold text-black mb-3">Links</h4>
+            <div className="space-y-2">
+              <SubmitTokenDialog />
+              
+              <a 
+                href={githubService.getRepoUrl()} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center justify-center md:justify-start space-x-2 text-sm text-black/60 hover:text-[#00ec97] transition-colors"
+              >
+                <Github className="h-4 w-4" />
+                <span>GitHub</span>
+              </a>
+              
+              <Link 
+                to="/landing" 
+                className="block text-sm text-black/60 hover:text-[#17d9d4] transition-colors"
+              >
+                About
+              </Link>
+
+              <Link 
+                to="/updates" 
+                className="block text-sm text-black/60 hover:text-[#17d9d4] transition-colors"
+              >
+                Updates
+              </Link>
+            </div>
           </div>
         </div>
-        
-        
       </div>
-    </footer>;
+    </footer>
+  );
 };
