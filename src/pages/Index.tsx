@@ -36,7 +36,11 @@ interface Project {
   size_fdv?: string;
   expected_fdv?: string;
   logo?: string;
-  backers?: (string | BackerObject)[];
+  backers?: Array<{
+    name: string;
+    logo?: string;
+    link?: string;
+  }> | string[];
 }
 
 interface TokensData {
