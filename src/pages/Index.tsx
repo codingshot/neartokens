@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,31 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen, Grid2X2, List, ChevronDown, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-
-interface Project {
-  id: number | string;
-  name: string;
-  category: string | string[];
-  status: 'upcoming' | 'completed';
-  type?: 'sale' | 'listing';
-  symbol?: string;
-  description?: string;
-  sale_date?: string;
-  launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
-  logo?: string;
-  backers?: Array<{
-    name: string;
-    logo?: string;
-    link?: string;
-  }> | string[];
-}
-
-interface TokensData {
-  token_sales: Project[];
-  token_listings: Project[];
-}
+import { Project, TokensData } from '@/types/project';
 
 const fetchTokensData = async (): Promise<TokensData> => {
   const response = await fetch('/data/tokens.json');
@@ -221,76 +196,85 @@ export default function Index() {
       {/* Hero Section */}
       <section className="bg-white border-b border-black/10 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-3xl font-semibold text-black mb-3">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-black mb-3">
             Track tokens on NEAR Protocol
           </h2>
-          <p className="text-lg text-black/70 font-medium mb-4">
+          <p className="text-base sm:text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
+            {/* Search Input - Full width on mobile */}
             <div className="flex flex-col items-center justify-center space-y-3">
               <Input
                 type="text"
                 placeholder="Search for tokens..."
-                className="max-w-md"
+                className="w-full max-w-md"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DeFi">DeFi</SelectItem>
-                    <SelectItem value="AI">AI</SelectItem>
-                    <SelectItem value="Social">Social</SelectItem>
-                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <MultiSelect
-                  options={allBackers}
-                  selected={selectedBackers}
-                  onChange={setSelectedBackers}
-                  placeholder="Backers"
-                  className="w-[120px]"
-                />
+              
+              {/* Filters Row - Stack on mobile, inline on desktop */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-4xl">
+                <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-[120px] sm:w-[140px]">
+                      <SelectValue placeholder="Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DeFi">DeFi</SelectItem>
+                      <SelectItem value="AI">AI</SelectItem>
+                      <SelectItem value="Social">Social</SelectItem>
+                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <MultiSelect
+                    options={allBackers}
+                    selected={selectedBackers}
+                    onChange={setSelectedBackers}
+                    placeholder="Backers"
+                    className="w-[100px] sm:w-[120px]"
+                  />
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-fit">
-                      <span className="capitalize">{sortBy === 'date' ? 'Launch Date' : sortBy}</span>
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSortBy('date')}>
-                      Launch Date
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('name')}>
-                      Name
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('status')}>
-                      Status
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-fit">
+                        <span className="hidden sm:inline capitalize">{sortBy === 'date' ? 'Launch Date' : sortBy}</span>
+                        <span className="sm:hidden capitalize">Sort</span>
+                        <ChevronDown className="ml-1 sm:ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setSortBy('date')}>
+                        Launch Date
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('name')}>
+                        Name
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('status')}>
+                        Status
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')}>
-                  <ToggleGroupItem value="cards" aria-label="Card view">
-                    <Grid2X2 className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="list" aria-label="List view">
-                    <List className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="calendar" aria-label="Calendar view">
-                    <Calendar className="h-4 w-4" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                  <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} className="border rounded-md">
+                    <ToggleGroupItem value="cards" aria-label="Card view" className="px-2 sm:px-3">
+                      <Grid2X2 className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">Cards</span>
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="list" aria-label="List view" className="px-2 sm:px-3">
+                      <List className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">List</span>
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2 sm:px-3">
+                      <Calendar className="h-4 w-4" />
+                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">Calendar</span>
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
 
                 {hasFilters && (
-                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                  <Button variant="outline" size="sm" onClick={clearFilters} className="w-full sm:w-auto">
                     <span className="sm:hidden">Clear</span>
                     <span className="hidden sm:inline">Clear Filters</span>
                   </Button>
@@ -298,7 +282,7 @@ export default function Index() {
               </div>
             </div>
             
-            {/* Active Filters Row */}
+            {/* Active Filters Row - Left aligned under search */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-start max-w-md mx-auto">
                 {activeFilters.map((filter, index) => (
@@ -333,7 +317,7 @@ export default function Index() {
               <Link 
                 key={`${project.id}-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
+                className="text-black font-semibold mr-4 sm:mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
                 style={{ lineHeight: '32px', height: '32px' }}
               >
                 <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -364,16 +348,17 @@ export default function Index() {
                     </span>
                   </div>
                 </div>
-                <span className="text-lg">{project.name}</span>
-                {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
-                <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
+                <span className="text-sm sm:text-lg">{project.name}</span>
+                {project.symbol && <span className="text-xs sm:text-sm ml-2">${project.symbol}</span>}
+                <span className="text-xs ml-2 opacity-75 hidden sm:inline">{project.sale_date || project.launch_date || 'TBD'}</span>
               </Link>
             ))}
+            {/* Duplicate for seamless scrolling */}
             {upcomingProjects.map((project, index) => (
               <Link 
                 key={`${project.id}-duplicate-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
+                className="text-black font-semibold mr-4 sm:mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2 align-middle"
                 style={{ lineHeight: '32px', height: '32px' }}
               >
                 <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
@@ -404,9 +389,9 @@ export default function Index() {
                     </span>
                   </div>
                 </div>
-                <span className="text-lg">{project.name}</span>
-                {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
-                <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
+                <span className="text-sm sm:text-lg">{project.name}</span>
+                {project.symbol && <span className="text-xs sm:text-sm ml-2">${project.symbol}</span>}
+                <span className="text-xs ml-2 opacity-75 hidden sm:inline">{project.sale_date || project.launch_date || 'TBD'}</span>
               </Link>
             ))}
           </div>

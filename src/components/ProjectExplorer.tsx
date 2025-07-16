@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProjectCard } from '@/components/ProjectCard';
 import { CalendarView } from '@/components/CalendarView';
@@ -7,26 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, DollarSign, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-// Import Project interface from ProjectCard to ensure consistency
-interface Project {
-  id: number | string;
-  name: string;
-  category: string | string[];
-  status: 'upcoming' | 'completed';
-  type?: 'sale' | 'listing';
-  symbol?: string;
-  description?: string;
-  sale_date?: string;
-  launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
-  backers?: Array<{
-    name: string;
-    logo?: string;
-    link?: string;
-  }> | string[];
-}
+import { Project } from '@/types/project';
 
 interface ProjectExplorerProps {
   projects: Project[];
@@ -111,13 +91,13 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
 
           return (
             <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <Link 
                         to={`/project/${project.id}`}
-                        className="font-semibold text-lg text-black hover:text-[#00ec97] transition-colors truncate"
+                        className="font-semibold text-base sm:text-lg text-black hover:text-[#00ec97] transition-colors truncate"
                       >
                         {project.name}
                       </Link>
@@ -159,7 +139,7 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row gap-4 text-sm shrink-0">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 text-sm shrink-0">
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-black/60" />
                       <span className="font-medium text-black/80">{launchDate}</span>
@@ -190,7 +170,7 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
 
   // Cards view (default)
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {sortedProjects.map((project) => (
         <ProjectCard 
           key={project.id} 

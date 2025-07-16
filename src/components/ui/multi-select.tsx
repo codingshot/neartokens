@@ -55,32 +55,32 @@ export function MultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="justify-between min-w-[200px]"
+            className="justify-between min-w-[100px] sm:min-w-[200px] w-full"
           >
             {selected.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {selected.slice(0, 2).map((item) => (
+                {selected.slice(0, 1).map((item) => (
                   <Badge
                     key={item}
                     variant="secondary"
-                    className="text-xs"
+                    className="text-xs max-w-[80px] truncate"
                   >
                     {item}
                   </Badge>
                 ))}
-                {selected.length > 2 && (
+                {selected.length > 1 && (
                   <Badge variant="secondary" className="text-xs">
-                    +{selected.length - 2} more
+                    +{selected.length - 1}
                   </Badge>
                 )}
               </div>
             ) : (
-              placeholder
+              <span className="truncate">{placeholder}</span>
             )}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
+        <PopoverContent className="w-[250px] sm:w-[300px] p-0" align="start">
           <Command>
             <CommandInput placeholder="Search backers..." />
             <CommandList>
@@ -106,22 +106,6 @@ export function MultiSelect({
           </Command>
         </PopoverContent>
       </Popover>
-      
-      {selected.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {selected.map((item) => (
-            <Badge
-              key={item}
-              variant="secondary"
-              className="text-xs px-2 py-1 cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-              onClick={() => handleUnselect(item)}
-            >
-              {item}
-              <X className="ml-1 h-3 w-3" />
-            </Badge>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
