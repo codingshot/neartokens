@@ -12,11 +12,7 @@ export interface Project {
   size_fdv?: string;
   expected_fdv?: string;
   logo?: string;
-  backers?: Array<{
-    name: string;
-    logo?: string;
-    link?: string;
-  }> | string[];
+  backers?: string[];
 }
 
 export interface TokensData {

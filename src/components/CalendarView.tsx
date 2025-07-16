@@ -1,24 +1,11 @@
+
 import { useState } from 'react';
 import { Calendar, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
-interface Project {
-  id: number | string;
-  name: string;
-  category: string | string[];
-  status: 'upcoming' | 'completed';
-  type?: 'sale' | 'listing';
-  symbol?: string;
-  description?: string;
-  sale_date?: string;
-  launch_date?: string;
-  size_fdv?: string;
-  expected_fdv?: string;
-  backers?: string[];
-}
+import { Project } from '@/types/project';
 
 interface CalendarViewProps {
   projects: Project[];
@@ -26,27 +13,52 @@ interface CalendarViewProps {
 
 export const CalendarView = ({ projects }: CalendarViewProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState('all');
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // Filter projects that have launch dates
   const projectsWithDates = projects.filter(project => 
     project.sale_date || project.launch_date
   );
 
+  // Helper function to extract quarter and year from date strings
+  const parseQuarterFromDate = (dateStr: string) => {
+    if (!dateStr) return null;
+    
+    try {
+      // Handle quarter format like "Early Q4 2024", "Late Q3 2025", "Q4 2025"
+      const quarterMatch = dateStr.match(/(Early|Late)?\s*(Q[1-4])\s*(\d{4})/i);
+      if (quarterMatch) {
+        const quarter = quarterMatch[2]; // Q1, Q2, Q3, Q4
+        const year = quarterMatch[3];
+        return { quarter, year };
+      }
+      
+      // Handle regular date format
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const quarter = `Q${Math.floor(month / 3) + 1}`;
+        return { quarter, year: year.toString() };
+      }
+    } catch (error) {
+      console.warn('Invalid date format:', dateStr);
+    }
+    
+    return null;
+  };
+
   // Group projects by quarters and periods
   const projectsByPeriod = projectsWithDates.reduce((acc, project) => {
     const dateStr = project.sale_date || project.launch_date;
     if (!dateStr) return acc;
     
-    try {
-      const date = new Date(dateStr);
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const quarter = Math.floor(month / 3) + 1;
+    const parsedDate = parseQuarterFromDate(dateStr);
+    if (parsedDate) {
+      const { quarter, year } = parsedDate;
       
       const allKey = 'all';
-      const yearKey = `${year}`;
-      const quarterKey = `${year}-Q${quarter}`;
+      const yearKey = year;
+      const quarterKey = `${quarter} ${year}`;
       
       if (!acc[allKey]) acc[allKey] = [];
       if (!acc[yearKey]) acc[yearKey] = [];
@@ -55,8 +67,6 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
       acc[allKey].push(project);
       acc[yearKey].push(project);
       acc[quarterKey].push(project);
-    } catch (error) {
-      console.warn('Invalid date format:', dateStr);
     }
     
     return acc;
@@ -67,28 +77,23 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
   const getPeriodOptions = () => {
     const options = [{ value: 'all', label: 'All Time' }];
     
-    // Add years
-    const years = [...new Set(projectsWithDates.map(p => {
-      const dateStr = p.sale_date || p.launch_date;
-      if (dateStr) {
-        try {
-          return new Date(dateStr).getFullYear();
-        } catch {
-          return null;
-        }
-      }
-      return null;
-    }).filter(Boolean))].sort((a, b) => b - a);
+    // Add predefined quarters first
+    const predefinedQuarters = ['Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025', '2026'];
     
-    years.forEach(year => {
-      options.push({ value: `${year}`, label: `${year}` });
-      
-      // Add quarters for each year
-      for (let q = 1; q <= 4; q++) {
-        const quarterKey = `${year}-Q${q}`;
-        if (projectsByPeriod[quarterKey]?.length > 0) {
-          options.push({ value: quarterKey, label: `Q${q} ${year}` });
-        }
+    predefinedQuarters.forEach(period => {
+      if (projectsByPeriod[period]?.length > 0) {
+        options.push({ value: period, label: period });
+      }
+    });
+    
+    // Add any other quarters/years found in data that aren't in predefined list
+    const foundPeriods = Object.keys(projectsByPeriod)
+      .filter(key => key !== 'all' && !predefinedQuarters.includes(key))
+      .sort();
+    
+    foundPeriods.forEach(period => {
+      if (projectsByPeriod[period]?.length > 0) {
+        options.push({ value: period, label: period });
       }
     });
     
@@ -147,21 +152,28 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-            >
-              {getPeriodOptions().map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+          {/* Single row layout with period selector and results count */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
+              >
+                {getPeriodOptions().map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              
+              <p className="text-sm text-black/60 whitespace-nowrap">
+                {currentPeriodProjects.length} launches
+              </p>
+            </div>
+            
+            <p className="text-sm text-black/60">
+              Viewing {selectedPeriod === 'all' ? 'All Time' : selectedPeriod}
+            </p>
           </div>
-          
-          <p className="text-sm text-black/60">
-            Viewing {selectedPeriod === 'all' ? 'All Time' : selectedPeriod} - {currentPeriodProjects.length} launches
-          </p>
         </CardContent>
       </Card>
 
