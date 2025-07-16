@@ -283,15 +283,15 @@ export default function Index() {
                     type="single" 
                     value={viewMode} 
                     onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
-                    className="border rounded-md"
+                    className="border rounded-md h-9"
                   >
-                    <ToggleGroupItem value="cards" aria-label="Card view" className="px-2">
+                    <ToggleGroupItem value="cards" aria-label="Card view" className="px-2 h-9">
                       <Grid2X2 className="h-4 w-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="list" aria-label="List view" className="px-2">
+                    <ToggleGroupItem value="list" aria-label="List view" className="px-2 h-9">
                       <List className="h-4 w-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2">
+                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2 h-9">
                       <Calendar className="h-4 w-4" />
                     </ToggleGroupItem>
                   </ToggleGroup>
@@ -367,15 +367,15 @@ export default function Index() {
                     type="single" 
                     value={viewMode} 
                     onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
-                    className="border rounded-md col-span-1"
+                    className="border rounded-md col-span-1 h-9"
                   >
-                    <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 px-1">
+                    <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 px-1 h-9">
                       <Grid2X2 className="h-4 w-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="list" aria-label="List view" className="flex-1 px-1">
+                    <ToggleGroupItem value="list" aria-label="List view" className="flex-1 px-1 h-9">
                       <List className="h-4 w-4" />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 px-1">
+                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 px-1 h-9">
                       <Calendar className="h-4 w-4" />
                     </ToggleGroupItem>
                   </ToggleGroup>

@@ -21,7 +21,7 @@ export const LoadingSpinner = ({ size = 'md', className = '', centered = false }
         <img 
           src="/lovable-uploads/2f7587c3-547e-4d5b-b88d-d510b8d304a6.png" 
           alt="NEAR" 
-          className="w-3/5 h-3/5 object-contain"
+          className="w-3/5 h-3/5 object-cover rounded-full"
         />
       </div>
       {/* Rotating circle around it */}
