@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useLoadingAnimation } from '@/hooks/useLoadingAnimation';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -8,6 +9,8 @@ interface LoadingSpinnerProps {
 }
 
 export const LoadingSpinner = ({ size = 'md', className = '', centered = false }: LoadingSpinnerProps) => {
+  const currentLogo = useLoadingAnimation();
+  
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-12 h-12',
@@ -16,12 +19,16 @@ export const LoadingSpinner = ({ size = 'md', className = '', centered = false }
 
   const spinnerContent = (
     <div className={`relative ${sizeClasses[size]} ${className}`}>
-      {/* NEAR logo in center */}
+      {/* Token logo in center */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img 
-          src="/lovable-uploads/2f7587c3-547e-4d5b-b88d-d510b8d304a6.png" 
-          alt="NEAR" 
-          className="w-3/5 h-3/5 object-cover rounded-full"
+          src={currentLogo.logo} 
+          alt={currentLogo.name}
+          className="w-3/5 h-3/5 object-cover rounded-full transition-opacity duration-300"
+          onError={(e) => {
+            // Fallback to NEAR logo if current logo fails to load
+            e.currentTarget.src = "/lovable-uploads/2f7587c3-547e-4d5b-b88d-d510b8d304a6.png";
+          }}
         />
       </div>
       {/* Rotating circle around it */}
