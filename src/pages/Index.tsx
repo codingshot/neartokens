@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
@@ -9,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Search, Grid3X3, List, Filter, TrendingUp, Clock, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 interface TokenData {
   id: string;
@@ -162,7 +168,7 @@ const Index = () => {
     );
   }
 
-  const upcomingProjects = allProjects.filter(p => p.status === 'upcoming').slice(0, 8);
+  const upcomingProjects = allProjects.filter(p => p.status === 'upcoming').slice(0, 12);
 
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
@@ -211,48 +217,60 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Upcoming Tokens Ticker */}
-          {upcomingProjects.length > 0 && (
-            <div className="bg-black/5 rounded-lg p-4 mb-6">
-              <h3 className="text-sm font-semibold text-black mb-3 flex items-center">
-                <Clock className="h-4 w-4 mr-2" />
-                Upcoming Tokens
-              </h3>
-              <div className="overflow-x-auto">
-                <div className="flex gap-4 min-w-full">
-                  {upcomingProjects.map((project) => {
-                    const launchDate = project.sale_date || project.launch_date || 'TBD';
-                    const symbol = project.symbol || 'TBD';
-                    
-                    return (
-                      <Link
-                        key={project.id}
-                        to={`/project/${project.id}`}
-                        className="flex-shrink-0 bg-white rounded-lg border border-black/10 p-3 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 min-w-[200px]"
-                      >
-                        <div className="space-y-1">
-                          <h4 className="font-semibold text-sm text-black line-clamp-1">
-                            {project.name}
-                          </h4>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-black/60 font-medium">
-                              ${symbol}
-                            </span>
-                            <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-1.5 py-0.5">
-                              {launchDate}
-                            </Badge>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
+
+      {/* Upcoming Tokens Ticker */}
+      {upcomingProjects.length > 0 && (
+        <div className="w-full bg-black/5 border-b border-black/10 py-3">
+          <div className="max-w-full">
+            <div className="flex items-center mb-2 px-6">
+              <Clock className="h-4 w-4 mr-2 text-black/60" />
+              <h3 className="text-sm font-semibold text-black">Upcoming Tokens</h3>
+            </div>
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+                skipSnaps: false,
+                dragFree: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {upcomingProjects.map((project) => {
+                  const launchDate = project.sale_date || project.launch_date || 'TBD';
+                  const symbol = project.symbol || 'TBD';
+                  
+                  return (
+                    <CarouselItem key={project.id} className="pl-2 md:pl-4 basis-auto">
+                      <Link
+                        to={`/project/${project.id}`}
+                        className="flex items-center bg-white rounded-lg border border-black/10 p-3 hover:border-[#00ec97] hover:shadow-sm transition-all duration-200 whitespace-nowrap"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="font-semibold text-sm text-black">
+                            {project.name}
+                          </div>
+                          <div className="text-xs text-black/60 font-medium">
+                            ${symbol}
+                          </div>
+                          <Badge className="bg-[#00ec97]/10 text-black border-[#00ec97]/30 text-xs px-2 py-1">
+                            {launchDate}
+                          </Badge>
+                        </div>
+                      </Link>
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">

@@ -54,6 +54,9 @@ const ProjectDetail = () => {
     queryFn: fetchTokensData,
   });
 
+  console.log('ProjectDetail - URL ID:', id);
+  console.log('ProjectDetail - Tokens Data:', tokensData);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
@@ -74,7 +77,23 @@ const ProjectDetail = () => {
   }
 
   const allProjects = [...(tokensData?.token_sales || []), ...(tokensData?.token_listings || [])];
-  const project = allProjects.find(p => p.id === id);
+  console.log('ProjectDetail - All Projects:', allProjects);
+  console.log('ProjectDetail - All Project IDs:', allProjects.map(p => p.id));
+  
+  // Try exact match first, then fallback to name-based matching
+  let project = allProjects.find(p => p.id === id);
+  
+  if (!project && id) {
+    // Try to find by name (case-insensitive, with underscores)
+    const normalizedId = id.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    project = allProjects.find(p => {
+      const normalizedProjectId = p.id.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const normalizedProjectName = p.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      return normalizedProjectId === normalizedId || normalizedProjectName === normalizedId;
+    });
+  }
+
+  console.log('ProjectDetail - Found Project:', project);
 
   if (!project) {
     return (
@@ -82,6 +101,8 @@ const ProjectDetail = () => {
         <div className="text-center">
           <h1 className="text-xl font-semibold text-black mb-2">Project not found</h1>
           <p className="text-black/60 mb-4">The project you're looking for doesn't exist.</p>
+          <p className="text-sm text-black/50 mb-4">Looking for ID: {id}</p>
+          <p className="text-sm text-black/50 mb-4">Available IDs: {allProjects.map(p => p.id).join(', ')}</p>
           <Link to="/">
             <Button variant="outline">Back to All Launches</Button>
           </Link>

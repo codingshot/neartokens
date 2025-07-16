@@ -26,25 +26,28 @@ export const SubmitTokenDialog = () => {
   const [newFeature, setNewFeature] = useState('');
 
   const handleSubmit = () => {
+    // Generate a unique ID from the project name
+    const projectId = formData.name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+    
     const tokenData = {
-      id: formData.name.toLowerCase().replace(/\s+/g, '_'),
+      id: projectId,
       name: formData.name,
       symbol: formData.symbol || 'TBD',
       description: formData.description,
       category: formData.category,
+      status: 'upcoming' as const,
+      type: tokenType,
       [tokenType === 'sale' ? 'sale_date' : 'launch_date']: formData.date,
       [tokenType === 'sale' ? 'size_fdv' : 'expected_fdv']: formData.fdv || 'TBD',
-      [tokenType === 'sale' ? 'launchpad' : 'listing_platform']: formData.launchpad || 'TBD',
-      website: formData.website || 'TBD',
+      website: formData.website || undefined,
       social: {
-        twitter: formData.twitter || 'TBD',
-        telegram: formData.telegram || 'TBD'
+        twitter: formData.twitter || undefined,
+        telegram: formData.telegram || undefined
       },
-      key_features: formData.keyFeatures,
-      status: 'upcoming'
+      key_features: formData.keyFeatures.length > 0 ? formData.keyFeatures : undefined
     };
 
-    const prUrl = generateSubmissionPR(tokenData, tokenType);
+    const prUrl = generateGitHubEditURL(tokenData, tokenType);
     window.open(prUrl, '_blank');
     setIsOpen(false);
     
@@ -64,90 +67,54 @@ export const SubmitTokenDialog = () => {
     });
   };
 
-  const generateSubmissionPR = (tokenData: any, type: 'sale' | 'listing') => {
-    const title = encodeURIComponent(`Add ${tokenData.name} Token ${type === 'sale' ? 'Sale' : 'Listing'}`);
-    
+  const generateGitHubEditURL = (tokenData: any, type: 'sale' | 'listing') => {
     const arrayName = type === 'sale' ? 'token_sales' : 'token_listings';
-    const jsonToAdd = JSON.stringify(tokenData, null, 4); // 4 spaces for better readability in PR
+    const newEntry = JSON.stringify(tokenData, null, 4);
     
-    // Create the file content that shows the exact change to be made
-    const fileContent = `{
-  "metadata": {
-    "title": "NEAR Token Season 2025 Database",
-    "description": "Token launches and listings on NEAR blockchain for 2025",
-    "last_updated": "${new Date().toISOString().split('T')[0]}",
-    "period": "July 2025 - January 2026",
-    "launchpad_type": "NEAR Intents-Based Launchpad",
-    "token_standard": "NEP141"
-  },
-  "${arrayName}": [
-    // ... existing ${arrayName} entries ...
-    ${jsonToAdd}
-  ],
-  // ... rest of the file remains the same ...
-}`;
-
-    const body = encodeURIComponent(`## New Token ${type === 'sale' ? 'Sale' : 'Listing'} Submission
+    // Create the commit message
+    const commitMessage = encodeURIComponent(`Add ${tokenData.name} to ${arrayName}`);
+    
+    // Create the PR title and body
+    const prTitle = encodeURIComponent(`Add ${tokenData.name} Token ${type === 'sale' ? 'Sale' : 'Listing'}`);
+    const prBody = encodeURIComponent(`## New Token ${type === 'sale' ? 'Sale' : 'Listing'} Submission
 
 **Token Details:**
 - Name: ${tokenData.name}
 - Symbol: ${tokenData.symbol}
+- Type: ${type === 'sale' ? 'Token Sale' : 'Token Listing'}
+- Launch Date: ${tokenData[type === 'sale' ? 'sale_date' : 'launch_date']}
 - Description: ${tokenData.description}
-- Categories: ${tokenData.category.join(', ')}
-- ${type === 'sale' ? 'Sale Date' : 'Launch Date'}: ${tokenData[type === 'sale' ? 'sale_date' : 'launch_date']}
-- ${type === 'sale' ? 'Size FDV' : 'Expected FDV'}: ${tokenData[type === 'sale' ? 'size_fdv' : 'expected_fdv']}
-- ${type === 'sale' ? 'Launchpad' : 'Listing Platform'}: ${tokenData[type === 'sale' ? 'launchpad' : 'listing_platform']}
 
-**Social Links:**
-- Website: ${tokenData.website}
-- Twitter: ${tokenData.social.twitter}
-- Telegram: ${tokenData.social.telegram}
+**Categories:** ${tokenData.category.join(', ')}
 
+${tokenData.key_features && tokenData.key_features.length > 0 ? `
 **Key Features:**
 ${tokenData.key_features.map((feature: string) => `- ${feature}`).join('\n')}
+` : ''}
 
 ---
 
-## File Changes
-
-Please add the following entry to the \`${arrayName}\` array in \`public/data/tokens.json\`:
-
-\`\`\`json
-${jsonToAdd}
-\`\`\`
-
-### Instructions for Maintainers:
-
-1. **Edit \`public/data/tokens.json\`**
-2. **Find the \`"${arrayName}": [\` array**
-3. **Add the above JSON object as the last item in the array** (don't forget the comma before it if there are existing items)
-4. **Update the \`last_updated\` field** in metadata to today's date
-5. **Update the statistics section** to reflect:
-   - Increment \`total_${arrayName.replace('token_', '')}\` by 1
-   - Increment \`total_projects\` by 1
-   - Update category counts for: ${tokenData.category.join(', ')}
-
-### Example of where to place the new entry:
-\`\`\`json
-{
-  "metadata": { ... },
-  "${arrayName}": [
-    // ... existing entries ...
-    ${jsonToAdd}
-  ],
-  "statistics": {
-    "total_token_sales": X,
-    "total_token_listings": Y,
-    "total_projects": Z,
-    // ... update these numbers
-  }
-}
-\`\`\`
+This submission adds a new entry to the \`${arrayName}\` array in \`public/data/tokens.json\`.
 
 *This submission was created via the NEAR Tokens website*`);
 
-    // Use GitHub's compare view to create a PR that suggests file changes
-    return `https://github.com/codingshot/neartokens/compare/main...?quick_pull=1&title=${title}&body=${body}&template=update`;
+    // Create GitHub URL for editing the file directly
+    const repoOwner = 'codingshot';
+    const repoName = 'neartokens';
+    const filePath = 'public/data/tokens.json';
+    const branchName = `add-${tokenData.id}-${Date.now()}`;
+    
+    // GitHub's edit URL that will create a new branch and allow editing
+    const editUrl = `https://github.com/${repoOwner}/${repoName}/edit/main/${filePath}`;
+    
+    // Add query parameters for auto-branch creation and PR
+    const urlParams = new URLSearchParams({
+      'message': `Add ${tokenData.name} to ${arrayName}`,
+      'description': `Add ${tokenData.name} token ${type} to the database`,
+      'quick_pull': '1'
+    });
+
+    return `${editUrl}?${urlParams.toString()}`;
   };
 
   const addCategory = () => {
@@ -376,7 +343,7 @@ ${jsonToAdd}
               className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black"
             >
               <GitPullRequest className="h-4 w-4 mr-2" />
-              Create Pull Request
+              Edit on GitHub
             </Button>
           </div>
         </div>
