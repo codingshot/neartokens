@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -216,11 +217,11 @@ export default function Index() {
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
-            {/* ALL CONTROLS IN ONE ROW - Desktop: all inline, Mobile: responsive grid */}
+            {/* ALL CONTROLS IN ONE ROW - Desktop: all inline with proper spacing, Mobile: responsive grid */}
             <div className="flex flex-col gap-3">
-              {/* Desktop: Single row with all controls */}
-              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-2 w-full max-w-6xl mx-auto">
-                <div className="w-[200px]">
+              {/* Desktop: Single row with all controls and better spacing */}
+              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-3 w-full max-w-6xl mx-auto">
+                <div className="w-[220px] flex-shrink-0">
                   <Input
                     type="text"
                     placeholder="Search for tokens..."
@@ -230,19 +231,21 @@ export default function Index() {
                   />
                 </div>
                 
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-[110px]">
-                    <SelectValue placeholder="Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="DeFi">DeFi</SelectItem>
-                    <SelectItem value="AI">AI</SelectItem>
-                    <SelectItem value="Social">Social</SelectItem>
-                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="w-[120px] flex-shrink-0">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DeFi">DeFi</SelectItem>
+                      <SelectItem value="AI">AI</SelectItem>
+                      <SelectItem value="Social">Social</SelectItem>
+                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 
-                <div className="w-[110px]">
+                <div className="w-[120px] flex-shrink-0">
                   <MultiSelect
                     options={allBackers}
                     selected={selectedBackers}
@@ -252,49 +255,55 @@ export default function Index() {
                   />
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-[90px]">
-                      <span className="capitalize text-sm">
-                        {sortBy === 'date' ? 'Date' : sortBy}
-                      </span>
-                      <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSortBy('date')}>
-                      Launch Date
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('name')}>
-                      Name
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('status')}>
-                      Status
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="w-[100px] flex-shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full">
+                        <span className="capitalize text-sm">
+                          {sortBy === 'date' ? 'Date' : sortBy}
+                        </span>
+                        <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setSortBy('date')}>
+                        Launch Date
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('name')}>
+                        Name
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setSortBy('status')}>
+                        Status
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
-                <ToggleGroup 
-                  type="single" 
-                  value={viewMode} 
-                  onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
-                  className="border rounded-md"
-                >
-                  <ToggleGroupItem value="cards" aria-label="Card view" className="px-2">
-                    <Grid2X2 className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="list" aria-label="List view" className="px-2">
-                    <List className="h-4 w-4" />
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2">
-                    <Calendar className="h-4 w-4" />
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="flex-shrink-0">
+                  <ToggleGroup 
+                    type="single" 
+                    value={viewMode} 
+                    onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
+                    className="border rounded-md"
+                  >
+                    <ToggleGroupItem value="cards" aria-label="Card view" className="px-2">
+                      <Grid2X2 className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="list" aria-label="List view" className="px-2">
+                      <List className="h-4 w-4" />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2">
+                      <Calendar className="h-4 w-4" />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
 
                 {hasFilters && (
-                  <Button variant="outline" size="sm" onClick={clearFilters} className="whitespace-nowrap">
-                    Clear
-                  </Button>
+                  <div className="flex-shrink-0">
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="whitespace-nowrap">
+                      Clear
+                    </Button>
+                  </div>
                 )}
               </div>
 
