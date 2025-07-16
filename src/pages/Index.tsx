@@ -216,8 +216,8 @@ export default function Index() {
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
-            {/* Search Input - Full width on mobile, smaller on desktop */}
-            <div className="w-full lg:max-w-md lg:mx-auto">
+            {/* Search Input - Smaller on desktop */}
+            <div className="w-full lg:max-w-sm lg:mx-auto">
               <Input
                 type="text"
                 placeholder="Search for tokens..."
@@ -227,10 +227,10 @@ export default function Index() {
               />
             </div>
             
-            {/* ALL FILTERS IN ONE ROW for desktop, stacked on mobile */}
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-2 w-full lg:max-w-4xl lg:mx-auto">
+            {/* ALL FILTERS IN ONE ROW - No wrapping on desktop */}
+            <div className="flex flex-col lg:flex-row lg:flex-nowrap items-center justify-center gap-2 w-full lg:max-w-5xl lg:mx-auto">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full lg:w-[140px]">
+                <SelectTrigger className="w-full lg:w-[120px]">
                   <SelectValue placeholder="Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ export default function Index() {
                 </SelectContent>
               </Select>
               
-              <div className="w-full lg:w-[140px]">
+              <div className="w-full lg:w-[120px]">
                 <MultiSelect
                   options={allBackers}
                   selected={selectedBackers}
@@ -253,9 +253,9 @@ export default function Index() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-full lg:w-[120px]">
+                  <Button variant="outline" size="sm" className="w-full lg:w-[100px]">
                     <span className="capitalize text-sm">
-                      {sortBy === 'date' ? 'Launch Date' : sortBy}
+                      {sortBy === 'date' ? 'Date' : sortBy}
                     </span>
                     <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
                   </Button>
@@ -279,20 +279,20 @@ export default function Index() {
                 onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
                 className="border rounded-md w-full lg:w-auto"
               >
-                <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2">
                   <Grid2X2 className="h-4 w-4" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2">
                   <List className="h-4 w-4" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2">
                   <Calendar className="h-4 w-4" />
                 </ToggleGroupItem>
               </ToggleGroup>
 
               {hasFilters && (
-                <Button variant="outline" size="sm" onClick={clearFilters} className="w-full lg:w-auto">
-                  Clear Filters
+                <Button variant="outline" size="sm" onClick={clearFilters} className="w-full lg:w-auto lg:whitespace-nowrap">
+                  Clear
                 </Button>
               )}
             </div>
