@@ -74,14 +74,21 @@ export default function Index() {
     queryFn: fetchTokensData,
   });
 
-  const projects = tokensData ? [...tokensData.token_sales, ...tokensData.token_listings] : [];
+  // Debug log to check data loading
+  console.log('Tokens data loaded:', tokensData);
+  console.log('Token sales:', tokensData?.token_sales?.length || 0);
+  console.log('Token listings:', tokensData?.token_listings?.length || 0);
+
+  const projects = tokensData ? [...(tokensData.token_sales || []), ...(tokensData.token_listings || [])] : [];
+  
+  console.log('Total projects:', projects.length);
   
   // Get all unique backers for the filter - improved logic
   const allBackers = React.useMemo(() => {
     const backerSet = new Set<string>();
     projects.forEach(project => {
       if (project.backers && Array.isArray(project.backers)) {
-        project.backers.forEach((backer: string | { name: string }) => {
+        project.backers.forEach((backer: any) => {
           if (typeof backer === 'string') {
             backerSet.add(backer);
           } else if (typeof backer === 'object' && backer !== null && 'name' in backer) {
@@ -114,7 +121,7 @@ export default function Index() {
     const backersMatch = selectedBackers.length === 0 || (
       project.backers && 
       Array.isArray(project.backers) && 
-      project.backers.some((backer: string | { name: string }) => {
+      project.backers.some((backer: any) => {
         const backerName = typeof backer === 'string' ? backer : (typeof backer === 'object' && backer !== null && 'name' in backer ? backer.name : null);
         return backerName && selectedBackers.includes(backerName);
       })
@@ -122,6 +129,8 @@ export default function Index() {
     
     return searchMatch && categoryMatch && backersMatch;
   });
+
+  console.log('Filtered projects:', filteredProjects.length);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -216,9 +225,9 @@ export default function Index() {
             </div>
             
             {/* Filters Row - Single row on desktop, stack on mobile */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-2 w-full">
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-2 w-full">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full md:w-auto min-w-[120px]">
+                <SelectTrigger className="w-full lg:w-auto min-w-[120px]">
                   <SelectValue placeholder="Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,7 +238,7 @@ export default function Index() {
                 </SelectContent>
               </Select>
               
-              <div className="w-full md:w-auto min-w-[140px]">
+              <div className="w-full lg:w-auto min-w-[140px]">
                 <MultiSelect
                   options={allBackers}
                   selected={selectedBackers}
@@ -241,7 +250,7 @@ export default function Index() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-full md:w-auto">
+                  <Button variant="outline" size="sm" className="w-full lg:w-auto">
                     <span className="capitalize">
                       {sortBy === 'date' ? 'Launch Date' : sortBy}
                     </span>
@@ -265,24 +274,24 @@ export default function Index() {
                 type="single" 
                 value={viewMode} 
                 onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
-                className="border rounded-md w-full md:w-auto"
+                className="border rounded-md w-full lg:w-auto"
               >
-                <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 md:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <Grid2X2 className="h-4 w-4" />
                   <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Cards</span>
                 </ToggleGroupItem>
-                <ToggleGroupItem value="list" aria-label="List view" className="flex-1 md:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <List className="h-4 w-4" />
                   <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">List</span>
                 </ToggleGroupItem>
-                <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 md:flex-initial px-2 sm:px-3">
+                <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <Calendar className="h-4 w-4" />
                   <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Calendar</span>
                 </ToggleGroupItem>
               </ToggleGroup>
 
               {hasFilters && (
-                <Button variant="outline" size="sm" onClick={clearFilters} className="w-full md:w-auto">
+                <Button variant="outline" size="sm" onClick={clearFilters} className="w-full lg:w-auto">
                   Clear Filters
                 </Button>
               )}
