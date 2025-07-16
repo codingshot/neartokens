@@ -1,5 +1,4 @@
-
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,6 +56,7 @@ const fetchTokensData = async (): Promise<TokensData> => {
 
 const ProjectDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   
   const { data: tokensData, isLoading, error } = useQuery({
     queryKey: ['tokens'],
@@ -220,6 +220,11 @@ const ProjectDetail = () => {
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    // Navigate to home page with category filter
+    navigate(`/?category=${encodeURIComponent(category)}`);
+  };
+
   const categories = Array.isArray(project.category) ? project.category : [project.category];
   const launchDate = project.sale_date || project.launch_date;
 
@@ -325,7 +330,12 @@ const ProjectDetail = () => {
             {/* Categories */}
             <div className="flex flex-wrap gap-2">
               {categories.map((cat: string) => (
-                <Badge key={cat} variant="outline" className="bg-white border-black/20 text-black font-medium">
+                <Badge 
+                  key={cat} 
+                  variant="outline" 
+                  className="bg-white border-black/20 text-black font-medium cursor-pointer hover:bg-[#00ec97]/10 hover:border-[#00ec97]/30 transition-colors"
+                  onClick={() => handleCategoryClick(cat)}
+                >
                   {cat}
                 </Badge>
               ))}

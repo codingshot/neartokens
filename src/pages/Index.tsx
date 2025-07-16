@@ -15,7 +15,7 @@ import { TwitterFeed } from '@/components/TwitterFeed';
 import { Footer } from '@/components/Footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen, Grid2X2, List, ChevronDown, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Project, TokensData } from '@/types/project';
 
@@ -62,6 +62,7 @@ const parseLaunchDate = (dateStr: string): Date => {
 };
 
 export default function Index() {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedBackers, setSelectedBackers] = useState<string[]>([]);
@@ -72,6 +73,15 @@ export default function Index() {
     queryKey: ['tokens'],
     queryFn: fetchTokensData,
   });
+
+  // Handle URL parameters for category filtering
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [location.search]);
 
   // Debug log to check data loading
   console.log('Tokens data loaded:', tokensData);
@@ -257,7 +267,7 @@ export default function Index() {
                 <div className="w-[130px] flex-shrink-0">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-full justify-between">
+                      <Button variant="outline" size="sm" className="w-full justify-between h-9">
                         <span className="capitalize text-sm">
                           {sortBy === 'date' ? 'Date' : sortBy}
                         </span>
@@ -299,7 +309,7 @@ export default function Index() {
 
                 {hasFilters && (
                   <div className="flex-shrink-0">
-                    <Button variant="outline" size="sm" onClick={clearFilters} className="whitespace-nowrap">
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="whitespace-nowrap h-9">
                       Clear
                     </Button>
                   </div>
