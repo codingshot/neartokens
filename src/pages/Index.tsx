@@ -199,18 +199,26 @@ export default function Index() {
         <div className="whitespace-nowrap">
           <div className="inline-block animate-scroll">
             {upcomingProjects.map((project, index) => (
-              <span key={`${project.id}-${index}`} className="text-black font-semibold mr-8">
+              <Link 
+                key={`${project.id}-${index}`}
+                to={`/project/${project.id}`}
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer"
+              >
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
-                <span className="text-sm ml-2">{project.sale_date || project.launch_date || 'TBD'}</span>
-              </span>
+                <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
+              </Link>
             ))}
             {upcomingProjects.map((project, index) => (
-              <span key={`${project.id}-duplicate-${index}`} className="text-black font-semibold mr-8">
+              <Link 
+                key={`${project.id}-duplicate-${index}`}
+                to={`/project/${project.id}`}
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer"
+              >
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
-                <span className="text-sm ml-2">{project.sale_date || project.launch_date || 'TBD'}</span>
-              </span>
+                <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
+              </Link>
             ))}
           </div>
         </div>
