@@ -2,15 +2,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Twitter, Heart, MessageCircle, Repeat2 } from 'lucide-react';
+import { MessageSquare, Heart, MessageCircle, Repeat2 } from 'lucide-react';
 
 interface TwitterFeedProps {
   projectName: string;
 }
 
 export const TwitterFeed: React.FC<TwitterFeedProps> = ({ projectName }) => {
-  // Mock Twitter data - in a real implementation, this would fetch from Twitter API
-  const mockTweets = [
+  // Mock project updates - these are example updates, not real social media feeds
+  const mockUpdates = [
     {
       id: 1,
       content: `Excited to announce our latest milestone! ${projectName} is making great progress on the roadmap. 🚀`,
@@ -44,39 +44,41 @@ export const TwitterFeed: React.FC<TwitterFeedProps> = ({ projectName }) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <Twitter className="h-5 w-5 text-blue-500" />
-          <span>Recent Updates</span>
+          <MessageSquare className="h-5 w-5 text-blue-500" />
+          <span>Project Updates</span>
+          <Badge variant="outline" className="text-xs">Demo</Badge>
         </CardTitle>
+        <p className="text-sm text-black/60">Sample project updates - actual social feeds will be integrated soon</p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {mockTweets.map((tweet) => (
-          <div key={tweet.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+        {mockUpdates.map((update) => (
+          <div key={update.id} className="border-b border-gray-100 pb-4 last:border-b-0">
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center space-x-2">
                 <Badge variant="outline" className="text-xs">
-                  @{tweet.author.toLowerCase().replace(/\s+/g, '_')}
+                  @{update.author.toLowerCase().replace(/\s+/g, '_')}
                 </Badge>
-                <span className="text-xs text-gray-500">{tweet.timestamp}</span>
+                <span className="text-xs text-gray-500">{update.timestamp}</span>
               </div>
             </div>
-            <p className="text-sm text-gray-700 mb-3">{tweet.content}</p>
+            <p className="text-sm text-gray-700 mb-3">{update.content}</p>
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center space-x-1">
                 <Heart className="h-3 w-3" />
-                <span>{tweet.likes}</span>
+                <span>{update.likes}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Repeat2 className="h-3 w-3" />
-                <span>{tweet.retweets}</span>
+                <span>{update.retweets}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <MessageCircle className="h-3 w-3" />
-                <span>{tweet.replies}</span>
+                <span>{update.replies}</span>
               </div>
             </div>
           </div>
         ))}
-      </CardContent>
+      </div>
     </Card>
   );
 };

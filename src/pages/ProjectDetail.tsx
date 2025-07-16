@@ -123,9 +123,9 @@ const ProjectDetail = () => {
           <h1 className="text-xl font-semibold text-black mb-2">Project not found</h1>
           <p className="text-black/60 mb-4">The project you're looking for doesn't exist.</p>
           <p className="text-sm text-black/50 mb-2">Looking for ID: {id}</p>
-          <p className="text-sm text-black/50 mb-4">Available projects:</p>
+          <p className="text-sm text-black/50 mb-4">Available IDs:</p>
           <div className="text-xs text-black/40 mb-4 max-w-lg">
-            {allProjects.map(p => `${p.name} (${p.id})`).join(', ')}
+            {allProjects.map(p => p.id).join(', ')}
           </div>
           <Link to="/">
             <Button variant="outline">Back to All Launches</Button>
@@ -215,7 +215,9 @@ const ProjectDetail = () => {
                 <div className="flex items-center space-x-3">
                   <DollarSign className="h-5 w-5 text-black/60" />
                   <div>
-                    <span className="font-semibold text-black">FDV:</span>
+                    <span className="font-semibold text-black">
+                      {project.status === 'upcoming' ? 'Expected FDV:' : 'FDV:'}
+                    </span>
                     <p className="text-black/80">{fdvAmount}</p>
                   </div>
                 </div>
@@ -273,7 +275,7 @@ const ProjectDetail = () => {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="backers">Backers</TabsTrigger>
-            <TabsTrigger value="social">Social</TabsTrigger>
+            <TabsTrigger value="social">Updates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">

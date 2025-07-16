@@ -118,15 +118,56 @@ const Index = () => {
       return matchesSearch && matchesCategory && matchesStatus && matchesType;
     });
 
-    // Sort by upcoming launches first
+    // Enhanced sorting by launch date with proper quarter and prefix handling
     return filtered.sort((a, b) => {
       const dateA = a.sale_date || a.launch_date || '';
       const dateB = b.sale_date || b.launch_date || '';
       
+      // Prioritize upcoming status
       if (a.status === 'upcoming' && b.status !== 'upcoming') return -1;
       if (b.status === 'upcoming' && a.status !== 'upcoming') return 1;
       
-      return dateA.localeCompare(dateB);
+      // Custom date parsing for quarters and prefixes
+      const parseCustomDate = (dateStr: string) => {
+        if (!dateStr) return { year: 9999, quarter: 5, prefix: 2 }; // Sort empty dates last
+        
+        // Extract year
+        const yearMatch = dateStr.match(/(\d{4})/);
+        const year = yearMatch ? parseInt(yearMatch[1]) : 9999;
+        
+        // Extract quarter
+        let quarter = 5; // Default for non-quarter dates
+        const quarterMatch = dateStr.match(/Q(\d)/);
+        if (quarterMatch) {
+          quarter = parseInt(quarterMatch[1]);
+        }
+        
+        // Extract prefix (Early = 0, no prefix = 1, Late = 2)
+        let prefix = 1;
+        if (dateStr.toLowerCase().includes('early')) {
+          prefix = 0;
+        } else if (dateStr.toLowerCase().includes('late')) {
+          prefix = 2;
+        }
+        
+        return { year, quarter, prefix };
+      };
+      
+      const parsedA = parseCustomDate(dateA);
+      const parsedB = parseCustomDate(dateB);
+      
+      // Sort by year first
+      if (parsedA.year !== parsedB.year) {
+        return parsedA.year - parsedB.year;
+      }
+      
+      // Then by quarter
+      if (parsedA.quarter !== parsedB.quarter) {
+        return parsedA.quarter - parsedB.quarter;
+      }
+      
+      // Finally by prefix (Early < no prefix < Late)
+      return parsedA.prefix - parsedB.prefix;
     });
   }, [allProjects, searchTerm, selectedCategory, selectedStatus, selectedType]);
 
@@ -167,9 +208,9 @@ const Index = () => {
     <div className="min-h-screen bg-[#f2f1e9]">
       {/* Hero Section - Reduced padding */}
       <section className="bg-white border-b border-black/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+          <div className="text-center mb-4">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-2">
               NEAR Token Season <span className="text-[#00ec97]">2025</span>
             </h1>
             <p className="text-lg md:text-xl text-black/70 font-medium max-w-3xl mx-auto leading-relaxed">
@@ -178,18 +219,8 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-center mb-6">
-            <Link to="/blog">
-              <Button variant="outline" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Blog
-              </Button>
-            </Link>
-          </div>
-
           {/* Stats Cards - Reduced spacing */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="bg-[#00ec97]/5 border-[#00ec97]/20 shadow-sm hover:shadow-md transition-shadow">
               <CardContent className="p-4 md:p-6 text-center">
                 <TrendingUp className="h-8 w-8 text-[#00ec97] mx-auto mb-2" />
@@ -223,7 +254,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Upcoming Tokens Ticker - Constantly revolving */}
+      {/* Upcoming Tokens Ticker */}
       {upcomingProjects.length > 0 && (
         <div className="w-full bg-black/5 border-b border-black/10 py-2 overflow-hidden">
           <div className="flex items-center mb-1 px-6">
