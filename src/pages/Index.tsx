@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -213,68 +214,75 @@ export default function Index() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               
-              {/* Filters Row - Desktop: single row, Mobile: wrap */}
-              <div className="flex flex-col lg:flex-row items-center justify-center gap-2 lg:gap-3 w-full max-w-4xl">
-                <div className="flex flex-wrap items-center justify-center gap-2 w-full lg:w-auto">
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-[120px] sm:w-[140px]">
-                      <SelectValue placeholder="Categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="DeFi">DeFi</SelectItem>
-                      <SelectItem value="AI">AI</SelectItem>
-                      <SelectItem value="Social">Social</SelectItem>
-                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
+              {/* Filters Row - Single row on desktop, wrap on smaller screens */}
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-6xl">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-auto min-w-[120px] max-w-[140px]">
+                    <SelectValue placeholder="Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DeFi">DeFi</SelectItem>
+                    <SelectItem value="AI">AI</SelectItem>
+                    <SelectItem value="Social">Social</SelectItem>
+                    <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <div className="min-w-0 max-w-[200px]">
                   <MultiSelect
                     options={allBackers}
                     selected={selectedBackers}
                     onChange={setSelectedBackers}
                     placeholder="Backers"
-                    className="w-[100px] sm:w-[120px]"
+                    className="w-full"
                   />
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-fit">
-                        <span className="hidden sm:inline capitalize">{sortBy === 'date' ? 'Launch Date' : sortBy}</span>
-                        <span className="sm:hidden capitalize">Sort</span>
-                        <ChevronDown className="ml-1 sm:ml-2 h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setSortBy('date')}>
-                        Launch Date
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('name')}>
-                        Name
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setSortBy('status')}>
-                        Status
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} className="border rounded-md">
-                    <ToggleGroupItem value="cards" aria-label="Card view" className="px-2 sm:px-3">
-                      <Grid2X2 className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">Cards</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="list" aria-label="List view" className="px-2 sm:px-3">
-                      <List className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">List</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2 sm:px-3">
-                      <Calendar className="h-4 w-4" />
-                      <span className="sr-only sm:not-sr-only sm:ml-1 hidden sm:inline">Calendar</span>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
                 </div>
 
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="min-w-0">
+                      <span className="hidden sm:inline capitalize">
+                        {sortBy === 'date' ? 'Launch Date' : sortBy}
+                      </span>
+                      <span className="sm:hidden">Sort</span>
+                      <ChevronDown className="ml-1 h-4 w-4 shrink-0" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setSortBy('date')}>
+                      Launch Date
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('name')}>
+                      Name
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('status')}>
+                      Status
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <ToggleGroup 
+                  type="single" 
+                  value={viewMode} 
+                  onValueChange={(value) => value && setViewMode(value as 'cards' | 'list' | 'calendar')} 
+                  className="border rounded-md shrink-0"
+                >
+                  <ToggleGroupItem value="cards" aria-label="Card view" className="px-2 sm:px-3">
+                    <Grid2X2 className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only sm:ml-1 hidden lg:inline">Cards</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="list" aria-label="List view" className="px-2 sm:px-3">
+                    <List className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only sm:ml-1 hidden lg:inline">List</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="calendar" aria-label="Calendar view" className="px-2 sm:px-3">
+                    <Calendar className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only sm:ml-1 hidden lg:inline">Calendar</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+
                 {hasFilters && (
-                  <Button variant="outline" size="sm" onClick={clearFilters} className="w-full sm:w-auto lg:w-auto">
+                  <Button variant="outline" size="sm" onClick={clearFilters} className="shrink-0">
                     <span className="sm:hidden">Clear</span>
                     <span className="hidden sm:inline">Clear Filters</span>
                   </Button>
@@ -291,13 +299,13 @@ export default function Index() {
                     variant="secondary" 
                     className="flex items-center gap-1 bg-[#00ec97]/10 text-black border-[#00ec97]/30"
                   >
-                    <span className="text-xs font-medium">
+                    <span className="text-xs font-medium truncate max-w-[120px]" title={filter.value}>
                       {filter.type === 'search' ? 'Search: ' : ''}
                       {filter.value}
                     </span>
                     <button
                       onClick={() => removeFilter(filter.type, filter.value)}
-                      className="ml-1 hover:bg-black/10 rounded-full p-0.5"
+                      className="ml-1 hover:bg-black/10 rounded-full p-0.5 shrink-0"
                     >
                       <X className="h-3 w-3" />
                     </button>

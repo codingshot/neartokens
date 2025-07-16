@@ -90,6 +90,21 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
           const categories = Array.isArray(project.category) ? project.category : [project.category];
           const backers = project.backers || [];
 
+          // Helper function to get backer name
+          const getBackerName = (backer: any): string => {
+            if (typeof backer === 'string') return backer;
+            if (typeof backer === 'object' && backer !== null && 'name' in backer) return backer.name;
+            return '';
+          };
+
+          // Helper function to truncate text in the middle
+          const truncateMiddle = (text: string, maxLength: number) => {
+            if (text.length <= maxLength) return text;
+            const start = Math.ceil((maxLength - 3) / 2);
+            const end = Math.floor((maxLength - 3) / 2);
+            return text.slice(0, start) + '...' + text.slice(-end);
+          };
+
           return (
             <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
               <CardContent className="p-3 sm:p-4">
@@ -140,23 +155,35 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 text-sm shrink-0">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-black/60" />
-                      <span className="font-medium text-black/80">{launchDate}</span>
+                  {/* Single row layout for desktop, stacked for mobile */}
+                  <div className="flex flex-col lg:flex-row gap-2 lg:gap-4 text-sm shrink-0">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <Calendar className="h-4 w-4 text-black/60 shrink-0" />
+                      <span className="font-medium text-black/80 truncate">{launchDate}</span>
                     </div>
                     
                     {fdvAmount && (
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-black/60" />
-                        <span className="font-medium text-black/80">{fdvAmount}</span>
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
+                        <span className="font-medium text-black/80 truncate" title={fdvAmount}>
+                          {truncateMiddle(fdvAmount, 15)}
+                        </span>
                       </div>
                     )}
 
                     {backers.length > 0 && (
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-black/60" />
-                        <span className="font-medium text-black/70">{backers.length} backers</span>
+                      <div className="flex items-center space-x-2 min-w-0 max-w-fit">
+                        <Users className="h-4 w-4 text-black/60 shrink-0" />
+                        <div className="flex items-center gap-1 min-w-0">
+                          <span className="font-medium text-black/70 whitespace-nowrap">
+                            {backers.length} backer{backers.length > 1 ? 's' : ''}
+                          </span>
+                          {backers.length > 0 && (
+                            <span className="text-black/50 truncate max-w-[120px] lg:max-w-[200px]" title={backers.map(getBackerName).join(', ')}>
+                              ({backers.slice(0, 2).map(getBackerName).join(', ')}{backers.length > 2 ? '...' : ''})
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
