@@ -146,33 +146,27 @@ export const CalendarView = ({ projects }: CalendarViewProps) => {
       {/* Period Selector */}
       <Card className="bg-white border-black/10">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-black">
-            <Calendar className="h-5 w-5" />
-            Launch Calendar
+          <CardTitle className="flex items-center justify-between text-black">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Launch Calendar
+            </div>
+            <div className="text-sm font-normal text-black/60">
+              {currentPeriodProjects.length} launches
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Single row layout with period selector and results count */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <select
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
-              >
-                {getPeriodOptions().map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-              
-              <p className="text-sm text-black/60 whitespace-nowrap">
-                {currentPeriodProjects.length} launches
-              </p>
-            </div>
-            
-            <p className="text-sm text-black/60">
-              Viewing {selectedPeriod === 'all' ? 'All Time' : selectedPeriod}
-            </p>
+          <div className="flex items-center gap-4">
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
+            >
+              {getPeriodOptions().map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
         </CardContent>
       </Card>
