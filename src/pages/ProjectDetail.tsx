@@ -1,11 +1,9 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TwitterFeed } from '@/components/TwitterFeed';
 import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 
 interface TokenData {
@@ -271,11 +269,10 @@ const ProjectDetail = () => {
 
         {/* Content Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 bg-white border border-black/10">
+          <TabsList className="grid w-full grid-cols-3 bg-white border border-black/10">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="backers">Backers</TabsTrigger>
-            <TabsTrigger value="social">Updates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -377,10 +374,6 @@ const ProjectDetail = () => {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="social" className="space-y-4">
-            <TwitterFeed />
           </TabsContent>
         </Tabs>
       </div>
