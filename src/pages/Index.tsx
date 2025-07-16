@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
 import { CalendarView } from '@/components/CalendarView';
@@ -81,6 +81,7 @@ const parseLaunchDate = (dateStr: string): Date => {
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedBackers, setSelectedBackers] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
 
   const { data: tokensData, isLoading, error } = useQuery({
@@ -89,6 +90,17 @@ export default function Index() {
   });
 
   const projects = tokensData ? [...tokensData.token_sales, ...tokensData.token_listings] : [];
+  
+  // Get all unique backers for the filter
+  const allBackers = React.useMemo(() => {
+    const backerSet = new Set<string>();
+    projects.forEach(project => {
+      if (project.backers) {
+        project.backers.forEach(backer => backerSet.add(backer));
+      }
+    });
+    return Array.from(backerSet).sort();
+  }, [projects]);
   
   // Sort upcoming projects by launch date for ticker
   const upcomingProjects = projects
@@ -106,16 +118,18 @@ export default function Index() {
   const filteredProjects = projects.filter(project => {
     const searchMatch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
     const categoryMatch = !selectedCategory || (Array.isArray(project.category) ? project.category.includes(selectedCategory) : project.category === selectedCategory);
-    return searchMatch && categoryMatch;
+    const backersMatch = selectedBackers.length === 0 || (project.backers && project.backers.some(backer => selectedBackers.includes(backer)));
+    return searchMatch && categoryMatch && backersMatch;
   });
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
+    setSelectedBackers([]);
   };
 
   // Check if any filters are applied
-  const hasFilters = searchQuery.trim() !== '' || selectedCategory !== '';
+  const hasFilters = searchQuery.trim() !== '' || selectedCategory !== '' || selectedBackers.length > 0;
 
   if (isLoading) {
     return (
@@ -144,7 +158,7 @@ export default function Index() {
           <div className="flex items-center justify-between">
             <Link to="/" className="hover:opacity-80 transition-opacity flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/953030c2-2096-4070-922b-c33c7fda1ce7.png" 
+                src="/favicon.ico" 
                 alt="NEAR Protocol Logo" 
                 className="h-6 w-6"
               />
@@ -195,6 +209,13 @@ export default function Index() {
                 <SelectItem value="Infrastructure">Infrastructure</SelectItem>
               </SelectContent>
             </Select>
+            <MultiSelect
+              options={allBackers}
+              selected={selectedBackers}
+              onChange={setSelectedBackers}
+              placeholder="Filter by backers"
+              className="w-full sm:w-auto"
+            />
             {hasFilters && (
               <Button variant="outline" size="sm" onClick={clearFilters}>
                 <span className="sm:hidden">Clear</span>
