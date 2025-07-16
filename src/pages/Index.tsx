@@ -158,7 +158,7 @@ export default function Index() {
           <div className="flex items-center justify-between">
             <Link to="/" className="hover:opacity-80 transition-opacity flex items-center space-x-2">
               <img 
-                src="/favicon.ico" 
+                src="/lovable-uploads/2f7587c3-547e-4d5b-b88d-d510b8d304a6.png" 
                 alt="NEAR Protocol Logo" 
                 className="h-6 w-6"
               />
