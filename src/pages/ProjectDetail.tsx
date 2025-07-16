@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, ExternalLink, Twitter, MessageCircle, Globe } from
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Footer } from '@/components/Footer';
+import { useSEO } from '@/hooks/useSEO';
 
 interface BackerData {
   name: string;
@@ -121,7 +122,37 @@ const ProjectDetail = () => {
 
   console.log('ProjectDetail - Found Project:', project);
 
+  // Apply dynamic SEO metadata
+  const baseUrl = 'https://nearplays.com';
+  const projectUrl = `${baseUrl}/project/${id}`;
+  
+  if (project) {
+    const categories = Array.isArray(project.category) ? project.category : [project.category];
+    const launchDate = project.sale_date || project.launch_date;
+    
+    const seoTitle = `${project.name} (${project.symbol || 'Token'}) - NEAR Token Launch | NEAR Tokens`;
+    const seoDescription = `${project.description} Launch Date: ${launchDate || 'TBD'}. Categories: ${categories.join(', ')}. Track this ${project.status} token ${project.type || 'launch'} on NEAR Protocol.`;
+    const seoKeywords = `${project.name}, ${project.symbol || ''}, NEAR Protocol, token launch, ${categories.join(', ')}, blockchain, Web3, ${project.status}, ${project.type || ''}`.replace(/,\s*,/g, ',').replace(/^,|,$/g, '');
+    
+    useSEO({
+      title: seoTitle,
+      description: seoDescription,
+      keywords: seoKeywords,
+      image: project.logo ? `${baseUrl}${project.logo}` : `${baseUrl}/tokenseason.webp`,
+      url: projectUrl,
+      type: 'article'
+    });
+  }
+
   if (!project) {
+    // SEO for 404 case
+    useSEO({
+      title: `Token Project Not Found - NEAR Tokens`,
+      description: `The requested token project could not be found. Browse all NEAR Protocol token launches and listings.`,
+      keywords: 'NEAR Protocol, token launches, blockchain, Web3, not found',
+      url: projectUrl
+    });
+
     return (
       <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
         <div className="text-center">
