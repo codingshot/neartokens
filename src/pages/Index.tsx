@@ -203,7 +203,7 @@ export default function Index() {
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
-            {/* Search Input - Full width on mobile */}
+            {/* Search Input */}
             <div className="flex flex-col items-center justify-center space-y-3">
               <Input
                 type="text"
@@ -213,9 +213,9 @@ export default function Index() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               
-              {/* Filters Row - Stack on mobile, inline on desktop */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 w-full max-w-4xl">
-                <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+              {/* Filters Row - Desktop: single row, Mobile: wrap */}
+              <div className="flex flex-col lg:flex-row items-center justify-center gap-2 lg:gap-3 w-full max-w-4xl">
+                <div className="flex flex-wrap items-center justify-center gap-2 w-full lg:w-auto">
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger className="w-[120px] sm:w-[140px]">
                       <SelectValue placeholder="Categories" />
@@ -274,7 +274,7 @@ export default function Index() {
                 </div>
 
                 {hasFilters && (
-                  <Button variant="outline" size="sm" onClick={clearFilters} className="w-full sm:w-auto">
+                  <Button variant="outline" size="sm" onClick={clearFilters} className="w-full sm:w-auto lg:w-auto">
                     <span className="sm:hidden">Clear</span>
                     <span className="hidden sm:inline">Clear Filters</span>
                   </Button>
