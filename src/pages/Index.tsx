@@ -17,6 +17,12 @@ import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
+interface BackerObject {
+  name: string;
+  logo?: string;
+  link?: string;
+}
+
 interface Project {
   id: number | string;
   name: string;
@@ -30,7 +36,7 @@ interface Project {
   size_fdv?: string;
   expected_fdv?: string;
   logo?: string;
-  backers?: string[];
+  backers?: (string | BackerObject)[];
 }
 
 interface TokensData {
@@ -101,7 +107,7 @@ export default function Index() {
         project.backers.forEach(backer => {
           if (typeof backer === 'string') {
             backerSet.add(backer);
-          } else if (typeof backer === 'object' && backer.name) {
+          } else if (typeof backer === 'object' && backer !== null && 'name' in backer) {
             backerSet.add(backer.name);
           }
         });
@@ -132,7 +138,7 @@ export default function Index() {
       project.backers && 
       Array.isArray(project.backers) && 
       project.backers.some(backer => {
-        const backerName = typeof backer === 'string' ? backer : backer?.name;
+        const backerName = typeof backer === 'string' ? backer : (typeof backer === 'object' && backer !== null && 'name' in backer ? backer.name : null);
         return backerName && selectedBackers.includes(backerName);
       })
     );
@@ -264,13 +270,18 @@ export default function Index() {
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const fallback = target.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const fallback = parent.querySelector('.fallback-logo') as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = 'flex';
+                          }
+                        }
                       }}
                     />
                   ) : null}
                   <div 
-                    className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
+                    className="fallback-logo w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
                     style={{ display: project.logo ? 'none' : 'flex' }}
                   >
                     <span className="text-[10px] text-black/60 font-medium">
@@ -299,13 +310,18 @@ export default function Index() {
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
-                        const fallback = target.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          const fallback = parent.querySelector('.fallback-logo') as HTMLElement;
+                          if (fallback) {
+                            fallback.style.display = 'flex';
+                          }
+                        }
                       }}
                     />
                   ) : null}
                   <div 
-                    className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
+                    className="fallback-logo w-5 h-5 rounded-full bg-black/10 flex items-center justify-center"
                     style={{ display: project.logo ? 'none' : 'flex' }}
                   >
                     <span className="text-[10px] text-black/60 font-medium">
