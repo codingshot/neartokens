@@ -185,8 +185,41 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                       )}
                     </div>
 
-                    {/* Fixed layout - each item gets its own row on mobile to prevent overlap */}
-                    <div className="space-y-2 sm:space-y-1 text-sm">
+                    {/* Desktop: Grid layout for project details to prevent overlap */}
+                    <div className="hidden sm:grid sm:grid-cols-1 lg:grid-cols-3 gap-2 text-sm">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <Calendar className="h-4 w-4 text-black/60 shrink-0" />
+                        <span className="font-medium text-black/80 truncate">{launchDate}</span>
+                      </div>
+                      
+                      {fdvAmount && (
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
+                          <span className="font-medium text-black/80 truncate" title={fdvAmount}>
+                            {truncateMiddle(fdvAmount, 15)}
+                          </span>
+                        </div>
+                      )}
+
+                      {backers.length > 0 && (
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <Users className="h-4 w-4 text-black/60 shrink-0" />
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="font-medium text-black/70 whitespace-nowrap">
+                              {backers.length} backer{backers.length > 1 ? 's' : ''}
+                            </span>
+                            {backers.length > 0 && (
+                              <span className="text-black/50 truncate" title={backers.map(getBackerName).join(', ')}>
+                                ({backers.slice(0, 1).map(getBackerName).join('')}{backers.length > 1 ? '...' : ''})
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Mobile: Vertical stack to prevent overlap */}
+                    <div className="sm:hidden space-y-2 text-sm">
                       <div className="flex items-center space-x-2 min-w-0">
                         <Calendar className="h-4 w-4 text-black/60 shrink-0" />
                         <span className="font-medium text-black/80 truncate">{launchDate}</span>
