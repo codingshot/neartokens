@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -217,8 +216,8 @@ export default function Index() {
             Stay updated on upcoming and completed token sales, listings, and more.
           </p>
           <div className="space-y-4">
-            {/* Search Input - Full width */}
-            <div className="w-full">
+            {/* Search Input - Full width on mobile, smaller on desktop */}
+            <div className="w-full lg:max-w-md lg:mx-auto">
               <Input
                 type="text"
                 placeholder="Search for tokens..."
@@ -228,8 +227,8 @@ export default function Index() {
               />
             </div>
             
-            {/* ALL FILTERS ON ONE ROW for desktop, stacked on mobile */}
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-2 w-full">
+            {/* ALL FILTERS IN ONE ROW for desktop, stacked on mobile */}
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-2 w-full lg:max-w-4xl lg:mx-auto">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full lg:w-[140px]">
                   <SelectValue placeholder="Categories" />
@@ -282,15 +281,12 @@ export default function Index() {
               >
                 <ToggleGroupItem value="cards" aria-label="Card view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <Grid2X2 className="h-4 w-4" />
-                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Cards</span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="list" aria-label="List view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <List className="h-4 w-4" />
-                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">List</span>
                 </ToggleGroupItem>
                 <ToggleGroupItem value="calendar" aria-label="Calendar view" className="flex-1 lg:flex-initial px-2 sm:px-3">
                   <Calendar className="h-4 w-4" />
-                  <span className="sr-only lg:not-sr-only lg:ml-1 hidden lg:inline">Calendar</span>
                 </ToggleGroupItem>
               </ToggleGroup>
 

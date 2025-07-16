@@ -155,15 +155,15 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     </div>
                   </div>
 
-                  {/* Single row layout for desktop, stacked for mobile */}
-                  <div className="flex flex-col lg:flex-row gap-2 lg:gap-4 text-sm shrink-0">
-                    <div className="flex items-center space-x-2 min-w-0">
+                  {/* Fixed layout for desktop to prevent overlapping */}
+                  <div className="flex flex-col xl:flex-row gap-2 xl:gap-6 text-sm shrink-0">
+                    <div className="flex items-center space-x-2 min-w-0 xl:min-w-[140px]">
                       <Calendar className="h-4 w-4 text-black/60 shrink-0" />
                       <span className="font-medium text-black/80 truncate">{launchDate}</span>
                     </div>
                     
                     {fdvAmount && (
-                      <div className="flex items-center space-x-2 min-w-0">
+                      <div className="flex items-center space-x-2 min-w-0 xl:min-w-[120px]">
                         <DollarSign className="h-4 w-4 text-black/60 shrink-0" />
                         <span className="font-medium text-black/80 truncate" title={fdvAmount}>
                           {truncateMiddle(fdvAmount, 15)}
@@ -172,14 +172,14 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick,
                     )}
 
                     {backers.length > 0 && (
-                      <div className="flex items-center space-x-2 min-w-0 max-w-fit">
+                      <div className="flex items-center space-x-2 min-w-0 xl:flex-1">
                         <Users className="h-4 w-4 text-black/60 shrink-0" />
                         <div className="flex items-center gap-1 min-w-0">
                           <span className="font-medium text-black/70 whitespace-nowrap">
                             {backers.length} backer{backers.length > 1 ? 's' : ''}
                           </span>
                           {backers.length > 0 && (
-                            <span className="text-black/50 truncate max-w-[120px] lg:max-w-[200px]" title={backers.map(getBackerName).join(', ')}>
+                            <span className="text-black/50 truncate max-w-[120px] xl:max-w-[200px]" title={backers.map(getBackerName).join(', ')}>
                               ({backers.slice(0, 2).map(getBackerName).join(', ')}{backers.length > 2 ? '...' : ''})
                             </span>
                           )}
