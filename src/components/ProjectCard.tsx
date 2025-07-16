@@ -70,11 +70,15 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   
   // Handle both old format (string[]) and new format (object[])
   const backers = project.backers || [];
-  const normalizedBackers = backers.map(backer => {
+  const normalizedBackers = backers.map((backer, index) => {
     if (typeof backer === 'string') {
-      return { name: backer };
+      return { name: backer, logo: undefined, link: undefined };
     }
-    return backer;
+    return {
+      name: backer.name || `Backer ${index + 1}`,
+      logo: backer.logo,
+      link: backer.link
+    };
   });
 
   return (
