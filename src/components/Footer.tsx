@@ -2,6 +2,7 @@
 import { Github } from 'lucide-react';
 import { GitHubService } from '@/services/githubService';
 import { Link } from 'react-router-dom';
+import { SubmitTokenDialog } from './SubmitTokenDialog';
 
 export const Footer = () => {
   const githubService = GitHubService.getInstance();
@@ -15,11 +16,13 @@ export const Footer = () => {
               <h3 className="text-lg font-semibold text-black mb-2">NEAR Tokens</h3>
             </Link>
             <p className="text-sm text-black/60 font-medium">
-              Tokens on NEAR, launch schedule
+              Track token launches on NEAR Protocol ecosystem
             </p>
           </div>
           
           <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
+            <SubmitTokenDialog />
+            
             <a
               href={githubService.getRepoUrl()}
               target="_blank"
@@ -48,7 +51,7 @@ export const Footer = () => {
         
         <div className="mt-6 pt-6 border-t border-black/10 text-center">
           <p className="text-xs text-black/50 font-medium">
-            Track token launches on NEAR Protocol ecosystem
+            Community-driven database of NEAR Protocol token launches • Season 2025
           </p>
         </div>
       </div>

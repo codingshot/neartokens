@@ -1,73 +1,132 @@
-# Welcome to your Lovable project
 
-## Project info
+# NEAR Tokens - Token Launch Database
 
-**URL**: https://lovable.dev/projects/9d4dbbd7-b7c3-412f-a35d-1ce97322fb0c
+A comprehensive database tracking token launches and listings on the NEAR Protocol ecosystem for 2025.
 
-## How can I edit this code?
+## About
 
-There are several ways of editing your application.
+NEAR Tokens is a community-driven platform that tracks upcoming token sales and listings in the NEAR ecosystem. We provide detailed information about launch schedules, funding rounds, key features, and project details to help the NEAR community stay informed about new opportunities.
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9d4dbbd7-b7c3-412f-a35d-1ce97322fb0c) and start prompting.
+- **Token Launch Tracking**: Comprehensive database of upcoming token sales and listings
+- **Launch Calendar**: Visual timeline of token launches with date ranges and specifics
+- **Project Details**: In-depth information about each project including backers, features, and traction
+- **Community Contributions**: GitHub-based contribution system for submitting new tokens
+- **Real-time Updates**: Live data updates from GitHub repository
 
-Changes made via Lovable will be committed automatically to this repo.
+## Data Coverage
 
-**Use your preferred IDE**
+Our database includes:
+- **Token Sales**: Pre-launch funding rounds and public sales
+- **Token Listings**: Direct platform listings and exchange debuts
+- **Project Categories**: AI, DeFi, Wallets, RWA, Gaming, Social, and more
+- **Launch Platforms**: NEAR Intents Launchpad, DEXs, and major exchanges
+- **Funding Information**: FDV ranges, backers, and investment details
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Contributing
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+We welcome community contributions! You can submit new token information in several ways:
 
-Follow these steps:
+### Submit via Website
+1. Visit [NEAR Tokens](https://neartokens.lovableproject.com)
+2. Click "Submit Token" in the footer
+3. Fill out the token information form
+4. Submit as a GitHub Pull Request
 
+### Submit via GitHub
+1. Fork the [repository](https://github.com/codingshot/neartokens)
+2. Edit `public/data/tokens.json`
+3. Add your token to the appropriate section (`token_sales` or `token_listings`)
+4. Submit a pull request with detailed information
+
+### Data Requirements
+When submitting a token, please include:
+- Project name and symbol
+- Description and category tags
+- Launch/sale date
+- Expected FDV or funding size
+- Launchpad or listing platform
+- Key features and differentiators
+- Social links and website
+- Backer information (if available)
+
+## Project Structure
+
+```
+src/
+├── components/         # React components
+├── pages/             # Route pages
+├── services/          # API and data services
+├── hooks/             # Custom React hooks
+└── types/             # TypeScript definitions
+
+public/
+└── data/
+    └── tokens.json    # Main token database
+```
+
+## Technology Stack
+
+This project is built with:
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Data**: JSON-based database with GitHub integration
+- **Deployment**: Lovable platform
+- **Version Control**: GitHub with automated PR workflows
+
+## API Access
+
+The token data is publicly accessible via:
+- JSON API: `/data/tokens.json`
+- GitHub Raw: `https://raw.githubusercontent.com/codingshot/neartokens/main/public/data/tokens.json`
+
+## Development
+
+### Prerequisites
+- Node.js & npm
+- Git
+
+### Setup
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone https://github.com/codingshot/neartokens.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd neartokens
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Community
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Repository**: [github.com/codingshot/neartokens](https://github.com/codingshot/neartokens)
+- **Website**: [neartokens.lovableproject.com](https://neartokens.lovableproject.com)
+- **Issues**: Report bugs or request features via GitHub Issues
+- **Discussions**: Join community discussions in GitHub Discussions
 
-**Use GitHub Codespaces**
+## Data Sources
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Our token information comes from:
+- Official project announcements
+- NEAR Foundation updates
+- Community submissions
+- Launchpad partnerships
+- Ecosystem program participants
 
-## What technologies are used for this project?
+## Disclaimer
 
-This project is built with:
+This database is for informational purposes only. Token information may change, and projects may be delayed or cancelled. Always verify information with official project sources before making any decisions.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## License
 
-## How can I deploy this project?
+This project is open source and available under the MIT License.
 
-Simply open [Lovable](https://lovable.dev/projects/9d4dbbd7-b7c3-412f-a35d-1ce97322fb0c) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+**Contributing to NEAR's Token Season 2025** 🚀
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Help us build the most comprehensive database of NEAR Protocol token launches. Submit your project or updates to keep the community informed!
