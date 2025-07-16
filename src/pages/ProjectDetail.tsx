@@ -135,6 +135,9 @@ const ProjectDetail = () => {
   const hasDetailsData = project.partnerships?.length > 0 || project.traction;
   const hasBackersData = project.backers?.length > 0;
 
+  // Check if social links exist
+  const hasSocialLinks = project.website || project.social?.twitter || project.social?.telegram;
+
   // Determine available tabs and default tab
   const availableTabs = [];
   if (hasOverviewData) availableTabs.push('overview');
@@ -208,7 +211,7 @@ const ProjectDetail = () => {
             </div>
 
             {/* Key Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className={`grid grid-cols-1 ${hasSocialLinks ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 mb-4`}>
               {launchDate && (
                 <div className="flex items-center space-x-3">
                   <Calendar className="h-5 w-5 text-black/60" />
@@ -231,39 +234,41 @@ const ProjectDetail = () => {
                 </div>
               )}
 
-              {/* Social Links */}
-              <div className="flex space-x-3">
-                {project.website && (
-                  <a
-                    href={project.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
-                  >
-                    <Globe className="h-5 w-5 text-black/60" />
-                  </a>
-                )}
-                {project.social?.twitter && (
-                  <a
-                    href={project.social.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
-                  >
-                    <Twitter className="h-5 w-5 text-black/60" />
-                  </a>
-                )}
-                {project.social?.telegram && (
-                  <a
-                    href={project.social.telegram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
-                  >
-                    <MessageCircle className="h-5 w-5 text-black/60" />
-                  </a>
-                )}
-              </div>
+              {/* Social Links - Only show if any social links exist */}
+              {hasSocialLinks && (
+                <div className="flex space-x-3">
+                  {project.website && (
+                    <a
+                      href={project.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
+                    >
+                      <Globe className="h-5 w-5 text-black/60" />
+                    </a>
+                  )}
+                  {project.social?.twitter && (
+                    <a
+                      href={project.social.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
+                    >
+                      <Twitter className="h-5 w-5 text-black/60" />
+                    </a>
+                  )}
+                  {project.social?.telegram && (
+                    <a
+                      href={project.social.telegram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center w-10 h-10 bg-black/5 hover:bg-black/10 rounded-lg transition-colors"
+                    >
+                      <MessageCircle className="h-5 w-5 text-black/60" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Categories */}
