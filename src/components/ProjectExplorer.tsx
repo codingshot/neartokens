@@ -5,19 +5,19 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Calendar, Users, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Grid3X3, List } from 'lucide-react';
 import { ProjectCard } from './ProjectCard';
 
 interface Project {
   id: number | string;
   name: string;
-  category: string;
+  category: string | string[];
   status: 'upcoming' | 'completed';
-  progress: number;
-  nextMilestone: string;
-  dueDate: string;
-  team: string[];
-  dependencies: string[];
+  progress?: number;
+  nextMilestone?: string;
+  dueDate?: string;
+  team?: string[];
+  dependencies?: string[];
   fundingType?: string;
   description?: string;
   type?: 'sale' | 'listing';
@@ -25,6 +25,7 @@ interface Project {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
+  backers?: string[];
 }
 
 interface ProjectExplorerProps {
@@ -42,13 +43,23 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  const filteredProjects = projects.filter((project) => {
+  // Safe array handling
+  const safeProjects = Array.isArray(projects) ? projects : [];
+
+  const filteredProjects = safeProjects.filter((project) => {
+    // Ensure project has required fields
+    if (!project || !project.name) return false;
+    
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.team.some(member => member.toLowerCase().includes(searchTerm.toLowerCase()));
+                         (project.team || []).some(member => member.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesCategory = categoryFilter === 'all' || project.category === categoryFilter;
+    
+    // Safe category handling
+    const projectCategories = Array.isArray(project.category) ? project.category : [project.category].filter(Boolean);
+    const matchesCategory = categoryFilter === 'all' || projectCategories.includes(categoryFilter);
+    
     const matchesType = typeFilter === 'all' || project.type === typeFilter;
     
     // Date range filtering for Q3, Q4 2025, etc.
@@ -69,13 +80,13 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
     return matchesSearch && matchesStatus && matchesCategory && matchesType && matchesDateRange && matchesFdv;
   });
 
-  // Sort projects
+  // Sort projects with safe handling
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     let comparison = 0;
     
     switch (sortBy) {
       case 'name':
-        comparison = a.name.localeCompare(b.name);
+        comparison = (a.name || '').localeCompare(b.name || '');
         break;
       case 'launch_date':
         const dateA = a.sale_date || a.launch_date || '';
@@ -92,13 +103,18 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
         comparison = statusOrder[a.status] - statusOrder[b.status];
         break;
       default:
-        comparison = a.name.localeCompare(b.name);
+        comparison = (a.name || '').localeCompare(b.name || '');
     }
     
     return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  const categories = [...new Set(projects.map(p => p.category))];
+  // Get unique categories safely
+  const categories = [...new Set(
+    safeProjects.flatMap(p => 
+      Array.isArray(p.category) ? p.category : [p.category]
+    ).filter(Boolean)
+  )];
 
   const clearAllFilters = () => {
     setSearchTerm('');
@@ -133,7 +149,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {/* Search Input */}
           <div className="flex flex-col lg:flex-row gap-3">
             <div className="flex-1">
@@ -147,9 +163,9 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
           </div>
           
           {/* Filters Row */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8">
+              <SelectTrigger className="border-black/20 font-medium">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -160,7 +176,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
             </Select>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8">
+              <SelectTrigger className="border-black/20 font-medium">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +187,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
             </Select>
             
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8">
+              <SelectTrigger className="border-black/20 font-medium">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -185,7 +201,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
             </Select>
 
             <Select value={dateRangeFilter} onValueChange={setDateRangeFilter}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8">
+              <SelectTrigger className="border-black/20 font-medium">
                 <SelectValue placeholder="Launch Period" />
               </SelectTrigger>
               <SelectContent>
@@ -197,7 +213,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
             </Select>
 
             <Select value={fdvFilter} onValueChange={setFdvFilter}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8">
+              <SelectTrigger className="border-black/20 font-medium">
                 <SelectValue placeholder="FDV Range" />
               </SelectTrigger>
               <SelectContent>
@@ -209,72 +225,76 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
                 <SelectItem value="undisclosed">Undisclosed</SelectItem>
               </SelectContent>
             </Select>
-
-            <div className="flex gap-1">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className={`text-xs h-8 px-2 ${viewMode === 'grid' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}`}
-              >
-                Grid
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className={`text-xs h-8 px-2 ${viewMode === 'list' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}`}
-              >
-                List
-              </Button>
-            </div>
           </div>
 
           {/* Controls Row */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="border-black/20 font-medium text-xs h-8 w-32">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="launch_date">Launch Date</SelectItem>
-                <SelectItem value="fdv">FDV</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex items-center gap-3">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="border-black/20 font-medium w-40">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="launch_date">Launch Date</SelectItem>
+                  <SelectItem value="fdv">FDV</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <div className="flex gap-1">
-              <Button
-                variant={sortOrder === 'asc' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortOrder('asc')}
-                className={`text-xs h-8 px-2 ${sortOrder === 'asc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}`}
-              >
-                A-Z
-              </Button>
-              <Button
-                variant={sortOrder === 'desc' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortOrder('desc')}
-                className={`text-xs h-8 px-2 ${sortOrder === 'desc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}`}
-              >
-                Z-A
-              </Button>
+              <div className="flex gap-1">
+                <Button
+                  variant={sortOrder === 'asc' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('asc')}
+                  className={sortOrder === 'asc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
+                >
+                  A-Z
+                </Button>
+                <Button
+                  variant={sortOrder === 'desc' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('desc')}
+                  className={sortOrder === 'desc' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
+                >
+                  Z-A
+                </Button>
+              </div>
             </div>
 
-            {/* Clear Filters */}
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                className="font-medium hover:bg-black/5 text-xs h-8 px-2 ml-auto"
-              >
-                <X className="mr-1 h-3 w-3" />
-                Clear All
-              </Button>
-            )}
+            <div className="flex items-center gap-3">
+              <div className="flex gap-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium' : 'border-black/20 hover:border-[#00ec97] font-medium'}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Clear Filters */}
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="font-medium hover:bg-black/5"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear All
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -283,7 +303,7 @@ export const ProjectExplorer = ({ projects }: ProjectExplorerProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <p className="text-sm text-black/60 font-medium">
-            Showing {sortedProjects.length} of {projects.length} token projects
+            Showing {sortedProjects.length} of {safeProjects.length} token projects
           </p>
           <div className="flex items-center space-x-2">
             <SlidersHorizontal className="h-4 w-4 text-black/60" />

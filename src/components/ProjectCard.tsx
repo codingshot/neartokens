@@ -10,11 +10,11 @@ interface Project {
   name: string;
   category: string | string[];
   status: 'upcoming' | 'completed';
-  progress: number;
-  nextMilestone: string;
-  dueDate: string;
-  team: string[];
-  dependencies: string[];
+  progress?: number;
+  nextMilestone?: string;
+  dueDate?: string;
+  team?: string[];
+  dependencies?: string[];
   type?: 'sale' | 'listing';
   symbol?: string;
   description?: string;
@@ -30,6 +30,12 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard = ({ project }: ProjectCardProps) => {
+  // Validate project data
+  if (!project || !project.id || !project.name) {
+    console.warn('Invalid project data:', project);
+    return null;
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'upcoming':
@@ -52,28 +58,30 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
     }
   };
 
-  const launchDate = project.sale_date || project.launch_date || project.dueDate;
+  const launchDate = project.sale_date || project.launch_date || project.dueDate || 'TBD';
   const fdvAmount = project.size_fdv || project.expected_fdv;
   const categories = Array.isArray(project.category) ? project.category : [project.category];
-  const backers = project.backers || project.team;
+  const backers = project.backers || project.team || [];
 
   return (
-    <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer">
+    <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30 cursor-pointer group">
       <Link to={`/project/${project.id}`} className="block">
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-lg text-black hover:text-[#00ec97] transition-colors">{project.name}</h3>
+            <div className="space-y-2 flex-1">
+              <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
+                {project.name}
+              </h3>
               {project.symbol && (
                 <p className="text-sm text-black/60 font-medium">${project.symbol}</p>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              <Badge className={`font-medium ${getStatusColor(project.status)}`}>
+            <div className="flex flex-col gap-2 ml-4">
+              <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
                 {project.status}
               </Badge>
               {project.type && (
-                <Badge className={`font-medium ${getTypeColor(project.type)}`}>
+                <Badge className={`font-medium text-xs ${getTypeColor(project.type)}`}>
                   {project.type}
                 </Badge>
               )}
@@ -81,29 +89,33 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-4">
           {/* Description */}
           {project.description && (
-            <p className="text-sm text-black/70 font-medium line-clamp-2">{project.description}</p>
+            <p className="text-sm text-black/70 font-medium line-clamp-2 leading-relaxed">
+              {project.description}
+            </p>
           )}
 
           {/* Categories */}
-          <div className="flex flex-wrap gap-1">
-            {categories.slice(0, 3).map((cat: string) => (
-              <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
-                {cat}
-              </Badge>
-            ))}
-            {categories.length > 3 && (
-              <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
-                +{categories.length - 3}
-              </Badge>
-            )}
-          </div>
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {categories.slice(0, 3).map((cat: string) => (
+                <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1">
+                  {cat}
+                </Badge>
+              ))}
+              {categories.length > 3 && (
+                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1">
+                  +{categories.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Launch Date */}
           <div className="flex items-center space-x-3 text-sm">
-            <Calendar className="h-4 w-4 text-black/60" />
+            <Calendar className="h-4 w-4 text-black/60 flex-shrink-0" />
             <span className="font-semibold text-black">Launch:</span>
             <span className="text-black/80 font-medium">{launchDate}</span>
           </div>
@@ -111,7 +123,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           {/* FDV */}
           {fdvAmount && (
             <div className="flex items-center space-x-3 text-sm">
-              <DollarSign className="h-4 w-4 text-black/60" />
+              <DollarSign className="h-4 w-4 text-black/60 flex-shrink-0" />
               <span className="font-semibold text-black">FDV:</span>
               <span className="text-black/80 font-medium">{fdvAmount}</span>
             </div>
@@ -120,9 +132,9 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           {/* Backers */}
           {backers.length > 0 && (
             <div className="flex items-center space-x-3 text-sm">
-              <Users className="h-4 w-4 text-black/60" />
+              <Users className="h-4 w-4 text-black/60 flex-shrink-0" />
               <span className="font-semibold text-black">Backers:</span>
-              <span className="text-black/70 font-medium">
+              <span className="text-black/70 font-medium line-clamp-1">
                 {backers.slice(0, 2).join(', ')}
                 {backers.length > 2 && ` +${backers.length - 2} more`}
               </span>
@@ -133,7 +145,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
       
       <div className="px-6 pb-6">
         <Link to={`/project/${project.id}`}>
-          <Button variant="outline" size="sm" className="w-full font-medium border-black/20 hover:border-[#00ec97] hover:bg-[#00ec97]/5">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full font-medium border-black/20 hover:border-[#00ec97] hover:bg-[#00ec97]/5 transition-all duration-200"
+          >
             View Details
           </Button>
         </Link>
