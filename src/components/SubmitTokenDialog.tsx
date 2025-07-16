@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Plus, X, GitPullRequest } from 'lucide-react';
-import { GitHubService } from '@/services/githubService';
 
 export const SubmitTokenDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,18 +26,16 @@ export const SubmitTokenDialog = () => {
   const [newCategory, setNewCategory] = useState('');
   const [newFeature, setNewFeature] = useState('');
 
-  const githubService = GitHubService.getInstance();
-
   const handleSubmit = () => {
     const tokenData = {
       id: formData.name.toLowerCase().replace(/\s+/g, '_'),
       name: formData.name,
-      symbol: formData.symbol,
+      symbol: formData.symbol || 'TBD',
       description: formData.description,
       category: formData.category,
       [tokenType === 'sale' ? 'sale_date' : 'launch_date']: formData.date,
-      [tokenType === 'sale' ? 'size_fdv' : 'expected_fdv']: formData.fdv,
-      [tokenType === 'sale' ? 'launchpad' : 'listing_platform']: formData.launchpad,
+      [tokenType === 'sale' ? 'size_fdv' : 'expected_fdv']: formData.fdv || 'TBD',
+      [tokenType === 'sale' ? 'launchpad' : 'listing_platform']: formData.launchpad || 'TBD',
       website: formData.website || 'TBD',
       social: {
         twitter: formData.twitter || 'TBD',
@@ -51,10 +48,29 @@ export const SubmitTokenDialog = () => {
     const prUrl = generateSubmissionPR(tokenData, tokenType);
     window.open(prUrl, '_blank');
     setIsOpen(false);
+    
+    // Reset form
+    setFormData({
+      name: '',
+      symbol: '',
+      description: '',
+      category: [],
+      date: '',
+      fdv: '',
+      launchpad: '',
+      website: '',
+      twitter: '',
+      telegram: '',
+      keyFeatures: []
+    });
   };
 
   const generateSubmissionPR = (tokenData: any, type: 'sale' | 'listing') => {
     const title = encodeURIComponent(`Add ${tokenData.name} Token ${type === 'sale' ? 'Sale' : 'Listing'}`);
+    
+    const jsonToAdd = JSON.stringify(tokenData, null, 2);
+    const arrayName = type === 'sale' ? 'token_sales' : 'token_listings';
+    
     const body = encodeURIComponent(`## New Token ${type === 'sale' ? 'Sale' : 'Listing'} Submission
 
 **Token Details:**
@@ -77,13 +93,22 @@ ${tokenData.key_features.map((feature: string) => `- ${feature}`).join('\n')}
 ---
 *This submission was created via the NEAR Tokens website*
 
-**JSON to add to \`public/data/tokens.json\`:**
+## Instructions for Maintainers
+
+Please add the following JSON object to the \`${arrayName}\` array in \`public/data/tokens.json\`:
 
 \`\`\`json
-${JSON.stringify(tokenData, null, 2)}
+${jsonToAdd}
 \`\`\`
 
-Please review and add this token to the appropriate section (token_sales or token_listings) in the tokens.json file.`);
+**Steps:**
+1. Open \`public/data/tokens.json\`
+2. Find the \`"${arrayName}": [\` array
+3. Add the above JSON object to the array (don't forget the comma if it's not the last item)
+4. Update the \`statistics\` section to reflect the new totals
+5. Update the \`last_updated\` field in metadata
+
+Thank you for maintaining the NEAR Tokens database!`);
 
     return `https://github.com/codingshot/neartokens/compare/main...?quick_pull=1&title=${title}&body=${body}`;
   };
@@ -188,14 +213,15 @@ Please review and add this token to the appropriate section (token_sales or toke
                 onChange={(e) => setNewCategory(e.target.value)}
                 placeholder="e.g., AI, DeFi, Wallet"
                 className="border-black/20"
+                onKeyPress={(e) => e.key === 'Enter' && addCategory()}
               />
               <Button onClick={addCategory} size="sm" className="bg-[#00ec97] text-black">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1">
               {formData.category.map((cat) => (
-                <Badge key={cat} variant="outline" className="bg-[#f2f1e9] border-black/20">
+                <Badge key={cat} variant="outline" className="bg-[#f2f1e9] border-black/20 text-xs px-2 py-0.5">
                   {cat}
                   <button onClick={() => removeCategory(cat)} className="ml-1">
                     <X className="h-3 w-3" />
@@ -284,6 +310,7 @@ Please review and add this token to the appropriate section (token_sales or toke
                 onChange={(e) => setNewFeature(e.target.value)}
                 placeholder="e.g., AI agent interoperability"
                 className="border-black/20"
+                onKeyPress={(e) => e.key === 'Enter' && addFeature()}
               />
               <Button onClick={addFeature} size="sm" className="bg-[#00ec97] text-black">
                 <Plus className="h-4 w-4" />

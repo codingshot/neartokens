@@ -8,14 +8,58 @@ import { ArrowLeft, Calendar, Users, GitBranch, ExternalLink, Github, Globe, Mes
 import { MilestoneTimeline } from '@/components/MilestoneTimeline';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useGitHubData } from '@/hooks/useGitHubData';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
+
+interface TokenData {
+  id: string;
+  name: string;
+  symbol?: string;
+  description?: string;
+  category: string | string[];
+  status: 'upcoming' | 'completed';
+  type?: 'sale' | 'listing';
+  sale_date?: string;
+  launch_date?: string;
+  size_fdv?: string;
+  expected_fdv?: string;
+  backers?: string[];
+  social?: {
+    twitter?: string;
+    telegram?: string;
+  };
+  website?: string;
+  key_features?: string[];
+}
+
+interface TokensData {
+  token_sales: TokenData[];
+  token_listings: TokenData[];
+}
+
+const fetchTokensData = async (): Promise<TokensData> => {
+  const response = await fetch('/data/tokens.json');
+  if (!response.ok) {
+    throw new Error('Failed to fetch tokens data');
+  }
+  return response.json();
+};
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
   const [searchParams] = useSearchParams();
   const { projects, loading, generatePRUrl, generateIssueUrl } = useGitHubData();
+  
+  const { data: tokensData, isLoading: tokensLoading } = useQuery({
+    queryKey: ['tokens'],
+    queryFn: fetchTokensData,
+  });
 
-  // Mock data structure - in real app this would come from GitHub data
+  // Get project from tokens data first, then fallback to GitHub data
+  const project = tokensData 
+    ? [...tokensData.token_sales, ...tokensData.token_listings].find(p => p.id === projectId)
+    : projects.find(p => p.id === projectId);
+
   const mockProjects = [
     {
       id: "omnibridge",
@@ -176,11 +220,11 @@ const ProjectDetail = () => {
     }
   ];
 
-  const project = projects.find(p => p.id === projectId) || mockProjects.find(p => p.id === projectId);
-  const allProjects = projects.length > 0 ? projects : mockProjects;
+  const finalProject = project || mockProjects.find(p => p.id === projectId);
+  const allProjects = project ? [project] : projects.length > 0 ? projects : mockProjects;
   const initialTab = searchParams.get('tab') || 'overview';
 
-  if (loading) {
+  if (loading || tokensLoading) {
     return (
       <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center">
         <LoadingSpinner size="lg" />
@@ -188,11 +232,12 @@ const ProjectDetail = () => {
     );
   }
 
-  if (!project) {
+  if (!finalProject) {
     return (
       <div className="min-h-screen bg-[#f2f1e9] flex items-center justify-center px-4">
         <div className="text-center">
           <h1 className="text-xl md:text-2xl font-semibold text-black mb-4">Project Not Found</h1>
+          <p className="text-black/60 mb-6">The project "{projectId}" could not be found.</p>
           <Link to="/">
             <Button className="bg-[#00ec97] hover:bg-[#00ec97]/90 text-black font-medium">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -207,17 +252,21 @@ const ProjectDetail = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'on-track':
+      case 'upcoming':
         return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
       case 'at-risk':
         return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
       case 'delayed':
         return 'bg-[#ff7966]/20 text-black border-[#ff7966]/40';
+      case 'completed':
+        return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
       default:
         return 'bg-black/5 text-black border-black/20';
     }
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'TBD';
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -225,9 +274,25 @@ const ProjectDetail = () => {
     });
   };
 
+  const displayProject = {
+    ...finalProject,
+    progress: finalProject.progress || 85,
+    nextMilestone: finalProject.nextMilestone || 'Launch',
+    dueDate: finalProject.sale_date || finalProject.launch_date || finalProject.dueDate || 'TBD',
+    team: finalProject.team || finalProject.backers || [],
+    dependencies: finalProject.dependencies || [],
+    githubRepo: finalProject.githubRepo,
+    website: finalProject.website,
+    twitter: finalProject.social?.twitter,
+    telegram: finalProject.social?.telegram,
+    fundingType: finalProject.type === 'sale' ? 'Token Sale' : 'Token Listing',
+    totalFunding: finalProject.size_fdv || finalProject.expected_fdv,
+    milestones: finalProject.milestones || [],
+    recentUpdates: finalProject.recentUpdates || []
+  };
+
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
-      {/* Header */}
       <header className="bg-white border-b border-black/10 px-4 md:px-6 py-4 md:py-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 space-y-3 md:space-y-0">
@@ -238,34 +303,33 @@ const ProjectDetail = () => {
               </Button>
             </Link>
             <div className="text-center lg:text-right bg-[#00ec97]/5 p-4 rounded-lg border border-[#00ec97]/20">
-              <div className="text-2xl md:text-3xl font-semibold text-[#00ec97] mb-1">{project.progress}%</div>
+              <div className="text-2xl md:text-3xl font-semibold text-[#00ec97] mb-1">{displayProject.progress}%</div>
               <div className="text-sm text-black/60 font-medium">Complete</div>
             </div>
           </div>
           
           <div className="flex flex-col lg:flex-row lg:items-start justify-between space-y-4 lg:space-y-0">
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-semibold text-black mb-3">{project.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-semibold text-black mb-3">{displayProject.name}</h1>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <Badge variant="outline" className="font-medium border-black/20 text-black">
-                  {project.category}
+                  {Array.isArray(displayProject.category) ? displayProject.category[0] : displayProject.category}
                 </Badge>
-                <Badge className={`font-medium ${getStatusColor(project.status)}`}>
-                  {project.status.replace('-', ' ')}
+                <Badge className={`font-medium ${getStatusColor(displayProject.status)}`}>
+                  {displayProject.status.replace('-', ' ')}
                 </Badge>
-                {project.fundingType && (
+                {displayProject.fundingType && (
                   <Badge variant="outline" className="font-medium border-[#17d9d4]/30 text-black bg-[#17d9d4]/5">
-                    {project.fundingType}
+                    {displayProject.fundingType}
                   </Badge>
                 )}
               </div>
-              <p className="text-black/70 font-medium max-w-3xl leading-relaxed mb-4">{project.description}</p>
+              <p className="text-black/70 font-medium max-w-3xl leading-relaxed mb-4">{displayProject.description}</p>
               
-              {/* Social Links - Now underneath description */}
               <div className="flex flex-wrap items-center gap-3">
-                {project.website && (
+                {displayProject.website && displayProject.website !== 'TBD' && (
                   <a 
-                    href={project.website} 
+                    href={displayProject.website} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
@@ -275,21 +339,9 @@ const ProjectDetail = () => {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                {project.docs && (
+                {displayProject.githubRepo && (
                   <a 
-                    href={project.docs} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
-                  >
-                    <FileText className="h-4 w-4" />
-                    <span>Docs</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-                {project.githubRepo && (
-                  <a 
-                    href={project.githubRepo} 
+                    href={displayProject.githubRepo} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
@@ -299,9 +351,9 @@ const ProjectDetail = () => {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                {project.twitter && (
+                {displayProject.twitter && displayProject.twitter !== 'TBD' && (
                   <a 
-                    href={project.twitter} 
+                    href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
@@ -311,15 +363,15 @@ const ProjectDetail = () => {
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
-                {project.discord && (
+                {displayProject.telegram && displayProject.telegram !== 'TBD' && (
                   <a 
-                    href={project.discord} 
+                    href={displayProject.telegram.startsWith('http') ? displayProject.telegram : `https://t.me/${displayProject.telegram.replace('@', '')}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 text-sm text-black/70 hover:text-black transition-colors hover:scale-105"
                   >
                     <MessageCircle className="h-4 w-4" />
-                    <span>Discord</span>
+                    <span>Telegram</span>
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
@@ -329,7 +381,6 @@ const ProjectDetail = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <Tabs defaultValue={initialTab} className="space-y-6 md:space-y-8">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:w-[500px] bg-white border border-black/10">
@@ -341,7 +392,6 @@ const ProjectDetail = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Progress Overview */}
               <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-black">Progress Overview</CardTitle>
@@ -350,9 +400,9 @@ const ProjectDetail = () => {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-semibold text-black">Overall Progress</span>
-                      <span className="text-sm text-black/70 font-medium">{project.progress}%</span>
+                      <span className="text-sm text-black/70 font-medium">{displayProject.progress}%</span>
                     </div>
-                    <Progress value={project.progress} className="h-3" />
+                    <Progress value={displayProject.progress} className="h-3" />
                   </div>
                   
                   <div className="pt-3 border-t border-black/10">
@@ -361,14 +411,13 @@ const ProjectDetail = () => {
                       <span className="font-semibold text-black">Next Milestone:</span>
                     </div>
                     <div className="ml-7">
-                      <div className="font-medium text-black">{project.nextMilestone}</div>
-                      <div className="text-sm text-black/60">Due: {formatDate(project.dueDate)}</div>
+                      <div className="font-medium text-black">{displayProject.nextMilestone}</div>
+                      <div className="text-sm text-black/60">Due: {formatDate(displayProject.dueDate)}</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Team Information */}
               <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-black">Team</CardTitle>
@@ -379,69 +428,69 @@ const ProjectDetail = () => {
                     <div>
                       <div className="font-semibold text-black mb-2">Core Team</div>
                       <div className="space-y-2">
-                        {project.team.map((member, index) => (
-                          <div key={index} className="flex items-center justify-between">
-                            <div className="text-black/70 font-medium">
-                              {typeof member === 'string' ? member : member.name}
-                            </div>
-                            {typeof member === 'object' && (member.github || member.twitter) && (
-                              <div className="flex space-x-1">
-                                {member.github && (
-                                  <a 
-                                    href={member.github} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="p-1 hover:bg-black/5 rounded transition-colors"
-                                  >
-                                    <Github className="w-3 h-3 text-black/60" />
-                                  </a>
-                                )}
-                                {member.twitter && (
-                                  <a 
-                                    href={member.twitter} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="p-1 hover:bg-black/5 rounded transition-colors"
-                                  >
-                                    <MessageCircle className="w-3 h-3 text-black/60" />
-                                  </a>
-                                )}
+                        {displayProject.team.length > 0 ? (
+                          displayProject.team.slice(0, 5).map((member, index) => (
+                            <div key={index} className="flex items-center justify-between">
+                              <div className="text-black/70 font-medium">
+                                {typeof member === 'string' ? member : member.name}
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              {typeof member === 'object' && (member.github || member.twitter) && (
+                                <div className="flex space-x-1">
+                                  {member.github && (
+                                    <a 
+                                      href={member.github} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="p-1 hover:bg-black/5 rounded transition-colors"
+                                    >
+                                      <Github className="w-3 h-3 text-black/60" />
+                                    </a>
+                                  )}
+                                  {member.twitter && (
+                                    <a 
+                                      href={member.twitter} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="p-1 hover:bg-black/5 rounded transition-colors"
+                                    >
+                                      <MessageCircle className="w-3 h-3 text-black/60" />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-black/60">No team information available</div>
+                        )}
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Dependencies */}
               <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-black">Dependencies</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-black">Key Features</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {project.dependencies && project.dependencies.length > 0 ? (
-                    <div className="flex items-start space-x-3 text-sm">
-                      <GitBranch className="h-4 w-4 text-black/60 mt-0.5" />
-                      <div className="space-y-2">
-                        {project.dependencies.map((dep, index) => (
-                          <Badge key={index} variant="outline" className="block w-fit font-medium border-[#9797ff]/30 text-black bg-[#9797ff]/5 hover:bg-[#9797ff]/10 transition-colors">
-                            {dep}
-                          </Badge>
-                        ))}
-                      </div>
+                  {displayProject.key_features && displayProject.key_features.length > 0 ? (
+                    <div className="space-y-2">
+                      {displayProject.key_features.map((feature, index) => (
+                        <div key={index} className="flex items-start space-x-2 text-sm">
+                          <div className="w-1.5 h-1.5 bg-[#00ec97] rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-black/70 font-medium">{feature}</span>
+                        </div>
+                      ))}
                     </div>
                   ) : (
-                    <div className="text-sm text-black/60 font-medium">No dependencies</div>
+                    <div className="text-sm text-black/60 font-medium">No key features listed</div>
                   )}
                 </CardContent>
               </Card>
             </div>
 
-            {/* Funding Information */}
-            {project.totalFunding && (
+            {displayProject.totalFunding && (
               <Card className="bg-white border-black/10 shadow-sm hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-black">Funding Information</CardTitle>
@@ -449,23 +498,13 @@ const ProjectDetail = () => {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <div className="text-sm font-semibold text-black mb-2">Total Funding</div>
-                      <div className="text-2xl font-semibold text-[#00ec97]">{project.totalFunding}</div>
+                      <div className="text-sm font-semibold text-black mb-2">Total FDV</div>
+                      <div className="text-2xl font-semibold text-[#00ec97]">{displayProject.totalFunding}</div>
                     </div>
-                    {project.fundingRounds && (
-                      <div>
-                        <div className="text-sm font-semibold text-black mb-3">Funding Rounds</div>
-                        <div className="space-y-2">
-                          {project.fundingRounds.map((round, index) => (
-                            <div key={index} className="flex justify-between items-center text-sm">
-                              <span className="font-medium text-black">{round.round}</span>
-                              <span className="text-black/70">{round.amount}</span>
-                              <span className="text-xs text-black/50">{formatDate(round.date)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div>
+                      <div className="text-sm font-semibold text-black mb-2">Type</div>
+                      <div className="text-lg font-medium text-black">{displayProject.fundingType}</div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -478,7 +517,14 @@ const ProjectDetail = () => {
                 <CardTitle className="text-xl font-semibold text-black">Project Milestones</CardTitle>
               </CardHeader>
               <CardContent>
-                <MilestoneTimeline projects={[project]} allProjects={allProjects} />
+                {displayProject.milestones && displayProject.milestones.length > 0 ? (
+                  <MilestoneTimeline projects={[displayProject]} allProjects={allProjects} />
+                ) : (
+                  <div className="text-center py-8 text-black/60">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-medium">No milestones available</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -491,49 +537,56 @@ const ProjectDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {project.team.map((member, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-[#00ec97]/20 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-semibold text-black">
-                              {typeof member === 'string' ? member.charAt(0) : member.name.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="font-medium text-black">
-                              {typeof member === 'string' ? member : member.name}
+                    {displayProject.team.length > 0 ? (
+                      displayProject.team.map((member, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-colors">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-[#00ec97]/20 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-semibold text-black">
+                                {typeof member === 'string' ? member.charAt(0) : member.name.charAt(0)}
+                              </span>
                             </div>
-                            <div className="text-sm text-black/60">
-                              {typeof member === 'object' && member.role ? member.role : 'Core Developer'}
+                            <div>
+                              <div className="font-medium text-black">
+                                {typeof member === 'string' ? member : member.name}
+                              </div>
+                              <div className="text-sm text-black/60">
+                                {typeof member === 'object' && member.role ? member.role : 'Core Developer'}
+                              </div>
                             </div>
                           </div>
+                          {typeof member === 'object' && (member.github || member.twitter) && (
+                            <div className="flex space-x-2">
+                              {member.github && (
+                                <a 
+                                  href={member.github} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                                >
+                                  <Github className="w-4 h-4 text-black/60" />
+                                </a>
+                              )}
+                              {member.twitter && (
+                                <a 
+                                  href={member.twitter} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                                >
+                                  <MessageCircle className="w-4 h-4 text-black/60" />
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        {typeof member === 'object' && (member.github || member.twitter) && (
-                          <div className="flex space-x-2">
-                            {member.github && (
-                              <a 
-                                href={member.github} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="p-2 hover:bg-black/10 rounded-full transition-colors"
-                              >
-                                <Github className="w-4 h-4 text-black/60" />
-                              </a>
-                            )}
-                            {member.twitter && (
-                              <a 
-                                href={member.twitter} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="p-2 hover:bg-black/10 rounded-full transition-colors"
-                              >
-                                <MessageCircle className="w-4 h-4 text-black/60" />
-                              </a>
-                            )}
-                          </div>
-                        )}
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-black/60">
+                        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p className="font-medium">No team information available</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -544,8 +597,8 @@ const ProjectDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {project.website && (
-                      <a href={project.website} target="_blank" rel="noopener noreferrer" 
+                    {displayProject.website && displayProject.website !== 'TBD' && (
+                      <a href={displayProject.website} target="_blank" rel="noopener noreferrer" 
                          className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
                         <Globe className="h-5 w-5 text-black/60" />
                         <div className="flex-1">
@@ -555,8 +608,8 @@ const ProjectDetail = () => {
                         <ExternalLink className="h-4 w-4 text-black/40" />
                       </a>
                     )}
-                    {project.githubRepo && (
-                      <a href={project.githubRepo} target="_blank" rel="noopener noreferrer"
+                    {displayProject.githubRepo && (
+                      <a href={displayProject.githubRepo} target="_blank" rel="noopener noreferrer"
                          className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
                         <Github className="h-5 w-5 text-black/60" />
                         <div className="flex-1">
@@ -566,8 +619,8 @@ const ProjectDetail = () => {
                         <ExternalLink className="h-4 w-4 text-black/40" />
                       </a>
                     )}
-                    {project.twitter && (
-                      <a href={project.twitter} target="_blank" rel="noopener noreferrer"
+                    {displayProject.twitter && displayProject.twitter !== 'TBD' && (
+                      <a href={displayProject.twitter.startsWith('http') ? displayProject.twitter : `https://twitter.com/${displayProject.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer"
                          className="flex items-center space-x-3 p-3 bg-black/5 rounded-lg hover:bg-black/10 transition-all hover:scale-[1.02]">
                         <MessageCircle className="h-5 w-5 text-black/60" />
                         <div className="flex-1">
@@ -589,9 +642,9 @@ const ProjectDetail = () => {
                 <CardTitle className="text-lg font-semibold text-black">Recent Updates</CardTitle>
               </CardHeader>
               <CardContent>
-                {project.recentUpdates && project.recentUpdates.length > 0 ? (
+                {displayProject.recentUpdates && displayProject.recentUpdates.length > 0 ? (
                   <div className="space-y-4">
-                    {project.recentUpdates.map((update, index) => (
+                    {displayProject.recentUpdates.map((update, index) => (
                       <div key={index} className="border-l-2 border-[#00ec97] pl-4 pb-4 hover:bg-black/5 p-3 rounded-r-lg transition-colors">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-2 space-y-1 md:space-y-0">
                           <h4 className="font-semibold text-black">{update.title}</h4>

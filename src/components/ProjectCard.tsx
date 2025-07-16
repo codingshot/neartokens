@@ -76,7 +76,7 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
                 <p className="text-sm text-black/60 font-medium">${project.symbol}</p>
               )}
             </div>
-            <div className="flex flex-col gap-2 ml-4">
+            <div className="flex flex-col gap-1 ml-4">
               <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
                 {project.status}
               </Badge>
@@ -97,17 +97,17 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
             </p>
           )}
 
-          {/* Categories */}
+          {/* Categories - More compact */}
           {categories.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {categories.slice(0, 3).map((cat: string) => (
-                <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1">
+              {categories.slice(0, 4).map((cat: string) => (
+                <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
                   {cat}
                 </Badge>
               ))}
-              {categories.length > 3 && (
-                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-2 py-1">
-                  +{categories.length - 3}
+              {categories.length > 4 && (
+                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
+                  +{categories.length - 4}
                 </Badge>
               )}
             </div>
