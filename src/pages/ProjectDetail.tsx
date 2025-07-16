@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
@@ -133,6 +134,19 @@ const ProjectDetail = () => {
     );
   }
 
+  // Check if data exists for each section
+  const hasOverviewData = project.key_features?.length > 0 || project.token_utility;
+  const hasDetailsData = project.partnerships?.length > 0 || project.traction;
+  const hasBackersData = project.backers?.length > 0;
+
+  // Determine available tabs and default tab
+  const availableTabs = [];
+  if (hasOverviewData) availableTabs.push('overview');
+  if (hasDetailsData) availableTabs.push('details');
+  if (hasBackersData) availableTabs.push('backers');
+
+  const defaultTab = availableTabs[0] || 'overview';
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'upcoming':
@@ -267,115 +281,124 @@ const ProjectDetail = () => {
           </div>
         </div>
 
-        {/* Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 bg-white border border-black/10">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="backers">Backers</TabsTrigger>
-          </TabsList>
+        {/* Content Tabs - Only show if there are available tabs */}
+        {availableTabs.length > 0 && (
+          <Tabs defaultValue={defaultTab} className="space-y-4">
+            <TabsList className={`grid w-full grid-cols-${availableTabs.length} bg-white border border-black/10`}>
+              {hasOverviewData && <TabsTrigger value="overview">Overview</TabsTrigger>}
+              {hasDetailsData && <TabsTrigger value="details">Details</TabsTrigger>}
+              {hasBackersData && <TabsTrigger value="backers">Backers</TabsTrigger>}
+            </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Key Features */}
-              {project.key_features && project.key_features.length > 0 && (
+            {hasOverviewData && (
+              <TabsContent value="overview" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Key Features */}
+                  {project.key_features && project.key_features.length > 0 && (
+                    <Card className="bg-white border-black/10">
+                      <CardHeader>
+                        <CardTitle className="text-black">Key Features</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {project.key_features.map((feature, index) => (
+                            <li key={index} className="flex items-start space-x-2">
+                              <span className="w-1.5 h-1.5 bg-[#00ec97] rounded-full mt-2 flex-shrink-0"></span>
+                              <span className="text-black/80 font-medium">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Token Utility */}
+                  {project.token_utility && (
+                    <Card className="bg-white border-black/10">
+                      <CardHeader>
+                        <CardTitle className="text-black">Token Utility</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-black/80 font-medium">{project.token_utility}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {hasDetailsData && (
+              <TabsContent value="details" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Partnerships */}
+                  {project.partnerships && project.partnerships.length > 0 && (
+                    <Card className="bg-white border-black/10">
+                      <CardHeader>
+                        <CardTitle className="text-black">Partnerships</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {project.partnerships.map((partner, index) => (
+                            <Badge key={index} variant="outline" className="bg-[#00ec97]/5 border-[#00ec97]/30 text-black">
+                              {partner}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Traction */}
+                  {project.traction && (
+                    <Card className="bg-white border-black/10">
+                      <CardHeader>
+                        <CardTitle className="text-black">Traction</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {Object.entries(project.traction).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span className="font-medium text-black/70 capitalize">{key.replace(/_/g, ' ')}:</span>
+                              <span className="font-semibold text-black">{String(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+            {hasBackersData && (
+              <TabsContent value="backers" className="space-y-4">
                 <Card className="bg-white border-black/10">
                   <CardHeader>
-                    <CardTitle className="text-black">Key Features</CardTitle>
+                    <CardTitle className="text-black">Backers & Investors</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-2">
-                      {project.key_features.map((feature, index) => (
-                        <li key={index} className="flex items-start space-x-2">
-                          <span className="w-1.5 h-1.5 bg-[#00ec97] rounded-full mt-2 flex-shrink-0"></span>
-                          <span className="text-black/80 font-medium">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Token Utility */}
-              {project.token_utility && (
-                <Card className="bg-white border-black/10">
-                  <CardHeader>
-                    <CardTitle className="text-black">Token Utility</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-black/80 font-medium">{project.token_utility}</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="details" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Partnerships */}
-              {project.partnerships && project.partnerships.length > 0 && (
-                <Card className="bg-white border-black/10">
-                  <CardHeader>
-                    <CardTitle className="text-black">Partnerships</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {project.partnerships.map((partner, index) => (
-                        <Badge key={index} variant="outline" className="bg-[#00ec97]/5 border-[#00ec97]/30 text-black">
-                          {partner}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Traction */}
-              {project.traction && (
-                <Card className="bg-white border-black/10">
-                  <CardHeader>
-                    <CardTitle className="text-black">Traction</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {Object.entries(project.traction).map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="font-medium text-black/70 capitalize">{key.replace(/_/g, ' ')}:</span>
-                          <span className="font-semibold text-black">{String(value)}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {project.backers?.map((backer, index) => (
+                        <div key={index} className="p-3 bg-black/5 rounded-lg">
+                          <span className="font-medium text-black">{backer}</span>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="backers" className="space-y-4">
-            {project.backers && project.backers.length > 0 ? (
-              <Card className="bg-white border-black/10">
-                <CardHeader>
-                  <CardTitle className="text-black">Backers & Investors</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {project.backers.map((backer, index) => (
-                      <div key={index} className="p-3 bg-black/5 rounded-lg">
-                        <span className="font-medium text-black">{backer}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-white border-black/10">
-                <CardContent className="p-8 text-center">
-                  <p className="text-black/60">No public backers information available.</p>
-                </CardContent>
-              </Card>
+              </TabsContent>
             )}
-          </TabsContent>
-        </Tabs>
+          </Tabs>
+        )}
+
+        {/* Show message if no tabs are available */}
+        {availableTabs.length === 0 && (
+          <Card className="bg-white border-black/10">
+            <CardContent className="p-8 text-center">
+              <p className="text-black/60">Additional project details are not available at this time.</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
