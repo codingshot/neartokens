@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Calendar, DollarSign, ExternalLink, Twitter, MessageCircle, Globe } from 'lucide-react';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
@@ -25,6 +26,7 @@ interface TokenData {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
+  logo?: string;
   backers?: (string | BackerData)[];
   social?: {
     twitter?: string;
@@ -201,12 +203,24 @@ const ProjectDetail = () => {
           <div className="bg-white rounded-lg border border-black/10 p-6 shadow-sm">
             <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
               <div>
-                <h1 className="text-3xl font-bold text-black mb-2">
-                  {project.name}
-                  {project.symbol && (
-                    <span className="text-xl text-black/60 ml-2">${project.symbol}</span>
+                <div className="flex items-center space-x-4 mb-2">
+                  {project.logo && (
+                    <Avatar className="h-12 w-12 flex-shrink-0">
+                      <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                      <AvatarFallback className="text-lg bg-black/10 text-black/60">
+                        {project.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
-                </h1>
+                  <div>
+                    <h1 className="text-3xl font-bold text-black">
+                      {project.name}
+                    </h1>
+                    {project.symbol && (
+                      <span className="text-xl text-black/60 ml-2">${project.symbol}</span>
+                    )}
+                  </div>
+                </div>
                 {project.description && (
                   <p className="text-lg text-black/70 font-medium leading-relaxed">
                     {project.description}

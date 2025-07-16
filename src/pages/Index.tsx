@@ -12,6 +12,7 @@ import { AnalyticsOverview } from '@/components/AnalyticsOverview';
 import { ProjectStatusChart } from '@/components/ProjectStatusChart';
 import { TwitterFeed } from '@/components/TwitterFeed';
 import { Footer } from '@/components/Footer';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign, Clock, ExternalLink, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -28,6 +29,7 @@ interface Project {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
+  logo?: string;
   backers?: string[];
 }
 
@@ -234,8 +236,16 @@ export default function Index() {
               <Link 
                 key={`${project.id}-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2"
               >
+                {project.logo && (
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                    <AvatarFallback className="text-[10px] bg-black/10 text-black/60">
+                      {project.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
                 <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>
@@ -245,8 +255,16 @@ export default function Index() {
               <Link 
                 key={`${project.id}-duplicate-${index}`}
                 to={`/project/${project.id}`}
-                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer"
+                className="text-black font-semibold mr-8 hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center space-x-2"
               >
+                {project.logo && (
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                    <AvatarFallback className="text-[10px] bg-black/10 text-black/60">
+                      {project.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
                 <span className="text-lg">{project.name}</span>
                 {project.symbol && <span className="text-sm ml-2">${project.symbol}</span>}
                 <span className="text-xs ml-2 opacity-75">{project.sale_date || project.launch_date || 'TBD'}</span>

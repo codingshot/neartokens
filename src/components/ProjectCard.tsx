@@ -23,6 +23,7 @@ interface Project {
   launch_date?: string;
   size_fdv?: string;
   expected_fdv?: string;
+  logo?: string;
   backers?: Array<{
     name: string;
     logo?: string;
@@ -87,11 +88,23 @@ export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="space-y-2 flex-1">
-              <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
-                {project.name}
-              </h3>
+              <div className="flex items-center space-x-3">
+                {project.logo && (
+                  <Avatar className="h-8 w-8 flex-shrink-0">
+                    <AvatarImage src={project.logo} alt={`${project.name} logo`} />
+                    <AvatarFallback className="text-xs bg-black/10 text-black/60">
+                      {project.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <h3 className="font-semibold text-lg text-black group-hover:text-[#00ec97] transition-colors line-clamp-1">
+                  {project.name}
+                </h3>
+              </div>
               {project.symbol && (
-                <p className="text-sm text-black/60 font-medium">${project.symbol}</p>
+                <p className="text-sm text-black/60 font-medium ml-11">
+                  ${project.symbol}
+                </p>
               )}
             </div>
             <div className="flex flex-col gap-1 ml-4">
