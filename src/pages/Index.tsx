@@ -219,7 +219,7 @@ export default function Index() {
             {/* ALL CONTROLS IN ONE ROW - Desktop: all inline with proper spacing, Mobile: responsive grid */}
             <div className="flex flex-col gap-3">
               {/* Desktop: Single row with all controls and better spacing - fixed container width */}
-              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-5 w-full max-w-7xl mx-auto">
+              <div className="hidden lg:flex lg:flex-nowrap items-center justify-center gap-6 w-full max-w-7xl mx-auto">
                 <div className="w-[250px] flex-shrink-0">
                   <Input
                     type="text"
