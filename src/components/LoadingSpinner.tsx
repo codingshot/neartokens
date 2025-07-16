@@ -19,7 +19,7 @@ export const LoadingSpinner = ({ size = 'md', className = '', centered = false }
       {/* NEAR logo in center */}
       <div className="absolute inset-0 flex items-center justify-center">
         <img 
-          src="/lovable-uploads/953030c2-2096-4070-922b-c33c7fda1ce7.png" 
+          src="/lovable-uploads/2f7587c3-547e-4d5b-b88d-d510b8d304a6.png" 
           alt="NEAR" 
           className="w-3/5 h-3/5 object-contain"
         />
