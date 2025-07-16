@@ -26,9 +26,10 @@ interface Project {
 interface ProjectExplorerProps {
   projects: Project[];
   viewMode?: 'cards' | 'list' | 'calendar';
+  onCategoryClick?: (category: string) => void;
 }
 
-export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplorerProps) => {
+export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick }: ProjectExplorerProps) => {
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'status'>('date');
 
   // Sort projects
@@ -80,6 +81,13 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
         </div>
         <h3 className="text-lg font-semibold text-black mb-2">No projects found</h3>
         <p className="text-black/60 mb-4">Try adjusting your search or filters to find more projects.</p>
+        <Button 
+          onClick={() => window.location.href = '/'}
+          variant="outline"
+          className="text-sm"
+        >
+          Clear All Filters
+        </Button>
       </div>
     );
   }
@@ -153,7 +161,12 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
 
                       <div className="flex flex-wrap gap-1 mb-2">
                         {categories.slice(0, 3).map((cat: string) => (
-                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
+                          <Badge 
+                            key={cat} 
+                            variant="outline" 
+                            className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10"
+                            onClick={() => onCategoryClick?.(cat)}
+                          >
                             {cat}
                           </Badge>
                         ))}
@@ -222,7 +235,11 @@ export const ProjectExplorer = ({ projects, viewMode = 'cards' }: ProjectExplore
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedProjects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard 
+            key={project.id} 
+            project={project} 
+            onCategoryClick={onCategoryClick}
+          />
         ))}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -27,9 +26,10 @@ interface Project {
 
 interface ProjectCardProps {
   project: Project;
+  onCategoryClick?: (category: string) => void;
 }
 
-export const ProjectCard = ({ project }: ProjectCardProps) => {
+export const ProjectCard = ({ project, onCategoryClick }: ProjectCardProps) => {
   // Validate project data
   if (!project || !project.id || !project.name) {
     console.warn('Invalid project data:', project);
@@ -97,22 +97,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
             </p>
           )}
 
-          {/* Categories - More compact */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {categories.slice(0, 4).map((cat: string) => (
-                <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
-                  {cat}
-                </Badge>
-              ))}
-              {categories.length > 4 && (
-                <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
-                  +{categories.length - 4}
-                </Badge>
-              )}
-            </div>
-          )}
-
           {/* Launch Date */}
           <div className="flex items-center space-x-3 text-sm">
             <Calendar className="h-4 w-4 text-black/60 flex-shrink-0" />
@@ -142,6 +126,33 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           )}
         </CardContent>
       </Link>
+
+      {/* Categories - Outside of Link to handle clicks */}
+      {categories.length > 0 && (
+        <div className="px-6 pb-2">
+          <div className="flex flex-wrap gap-1">
+            {categories.slice(0, 4).map((cat: string) => (
+              <Badge 
+                key={cat} 
+                variant="outline" 
+                className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5 cursor-pointer hover:bg-[#00ec97]/10 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onCategoryClick?.(cat);
+                }}
+              >
+                {cat}
+              </Badge>
+            ))}
+            {categories.length > 4 && (
+              <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium px-1.5 py-0.5 h-5">
+                +{categories.length - 4}
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
       
       <div className="px-6 pb-6">
         <Link to={`/project/${project.id}`}>

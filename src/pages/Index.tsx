@@ -1,5 +1,6 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -55,11 +56,29 @@ const fetchTokensData = async (): Promise<TokensData> => {
 };
 
 const Index = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  // Initialize state from URL parameters
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+  const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || 'all');
+  const [selectedType, setSelectedType] = useState(searchParams.get('type') || 'all');
+  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>(
+    (searchParams.get('view') as 'cards' | 'list' | 'calendar') || 'cards'
+  );
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
+    if (selectedStatus !== 'all') params.set('status', selectedStatus);
+    if (selectedType !== 'all') params.set('type', selectedType);
+    if (viewMode !== 'cards') params.set('view', viewMode);
+    
+    setSearchParams(params);
+  }, [searchTerm, selectedCategory, selectedStatus, selectedType, viewMode, setSearchParams]);
 
   const { data: tokensData, isLoading, error } = useQuery({
     queryKey: ['tokens'],
@@ -117,6 +136,11 @@ const Index = () => {
     setSelectedCategory('all');
     setSelectedStatus('all');
     setSelectedType('all');
+    setSearchParams(new URLSearchParams());
+  };
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
   };
 
   if (isLoading) {
@@ -382,7 +406,11 @@ const Index = () => {
           </div>
           
           <div className="p-4 md:p-6">
-            <ProjectExplorer projects={filteredProjects} viewMode={viewMode} />
+            <ProjectExplorer 
+              projects={filteredProjects} 
+              viewMode={viewMode} 
+              onCategoryClick={handleCategoryClick}
+            />
           </div>
         </div>
       </div>

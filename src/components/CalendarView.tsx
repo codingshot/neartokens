@@ -1,357 +1,219 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Calendar, CalendarDays } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, List, RefreshCw } from 'lucide-react';
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { cn } from "@/lib/utils";
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Link } from 'react-router-dom';
+
+interface Project {
+  id: number | string;
+  name: string;
+  category: string | string[];
+  status: 'upcoming' | 'completed';
+  type?: 'sale' | 'listing';
+  symbol?: string;
+  description?: string;
+  sale_date?: string;
+  launch_date?: string;
+  size_fdv?: string;
+  expected_fdv?: string;
+  backers?: string[];
+}
 
 interface CalendarViewProps {
-  projects: any[];
+  projects: Project[];
 }
 
 export const CalendarView = ({ projects }: CalendarViewProps) => {
-  const [viewMode, setViewMode] = useState<'calendar' | 'condensed'>('condensed');
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedMilestones, setSelectedMilestones] = useState<any[]>([]);
-  const [projectFilter, setProjectFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [timeRangeFilter, setTimeRangeFilter] = useState<string>('all');
-  const [availableProjects, setAvailableProjects] = useState<string[]>([]);
-  const isMobile = useIsMobile();
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  useEffect(() => {
-    if (projects && projects.length > 0) {
-      const projectNames = projects.map(project => project.name);
-      setAvailableProjects(projectNames);
+  // Filter projects that have launch dates
+  const projectsWithDates = projects.filter(project => 
+    project.sale_date || project.launch_date
+  );
+
+  // Group projects by month/year
+  const projectsByMonth = projectsWithDates.reduce((acc, project) => {
+    const dateStr = project.sale_date || project.launch_date;
+    if (!dateStr) return acc;
+    
+    try {
+      const date = new Date(dateStr);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      const key = `${year}-${month}`;
+      
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(project);
+    } catch (error) {
+      console.warn('Invalid date format:', dateStr);
     }
-  }, [projects]);
+    
+    return acc;
+  }, {} as Record<string, Project[]>);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
+  const currentMonthKey = `${selectedYear}-${selectedMonth}`;
+  const currentMonthProjects = projectsByMonth[currentMonthKey] || [];
 
-  const isPastDue = (dateString: string) => {
-    const dueDate = new Date(dateString);
-    const now = new Date();
-    return dueDate < now;
-  };
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'upcoming':
         return 'bg-[#00ec97]/10 text-black border-[#00ec97]/30';
-      case 'delayed':
-        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
-      case 'in-progress':
-        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
-      case 'pending':
-        return 'bg-black/10 text-black border-black/30';
+      case 'completed':
+        return 'bg-[#17d9d4]/10 text-black border-[#17d9d4]/30';
       default:
-        return 'bg-black/10 text-black border-black/30';
+        return 'bg-black/5 text-black border-black/20';
     }
   };
 
-  const getMilestonesForDate = (date: Date) => {
-    if (!date) return [];
-
-    const formattedDate = date.toISOString().split('T')[0];
-    return getFilteredMilestones().filter(milestone => milestone.dueDate && milestone.dueDate.split('T')[0] === formattedDate);
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'sale':
+        return 'bg-[#ff7966]/10 text-black border-[#ff7966]/30';
+      case 'listing':
+        return 'bg-[#9797ff]/10 text-black border-[#9797ff]/30';
+      default:
+        return 'bg-black/5 text-black border-black/20';
+    }
   };
 
-  const getFilteredMilestones = () => {
-    if (!projects || projects.length === 0) return [];
-
-    let filtered = projects.flatMap(project => {
-      // Add null check for milestones
-      if (!project.milestones || !Array.isArray(project.milestones)) {
-        return [];
-      }
-      
-      return project.milestones.map(milestone => ({
-        ...milestone,
-        projectName: project.name,
-        projectCategory: project.category
-      }));
-    });
-
-    if (projectFilter !== 'all') {
-      filtered = filtered.filter(milestone => milestone.projectName === projectFilter);
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(milestone => milestone.status === statusFilter);
-    }
-
-    if (timeRangeFilter !== 'all') {
-      const now = new Date();
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-
-      switch (timeRangeFilter) {
-        case 'this-month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          break;
-        case 'next-month':
-          startDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-          endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0);
-          break;
-        case 'this-quarter': {
-          const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
-          startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
-          endDate = new Date(now.getFullYear(), quarterStartMonth + 3, 0);
-          break;
-        }
-        case 'overdue':
-          filtered = filtered.filter(milestone => milestone.dueDate && isPastDue(milestone.dueDate) && milestone.status !== 'completed');
-          break;
-        default:
-          break;
-      }
-
-      if (startDate && endDate) {
-        filtered = filtered.filter(milestone => {
-          if (!milestone.dueDate) return false;
-          const milestoneDate = new Date(milestone.dueDate);
-          return milestoneDate >= startDate! && milestoneDate <= endDate!;
-        });
-      }
-    }
-
-    return filtered;
-  };
+  if (projectsWithDates.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-black/40 mb-4">
+          <CalendarDays className="h-16 w-16 mx-auto" />
+        </div>
+        <h3 className="text-lg font-semibold text-black mb-2">No launches found</h3>
+        <p className="text-black/60 mb-4">No projects have scheduled launch dates.</p>
+        <Button 
+          onClick={() => window.location.href = '/'}
+          variant="outline"
+          className="text-sm"
+        >
+          Clear All Filters
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* View Toggle */}
-      <Card className="bg-white border-black/10 shadow-sm">
+      {/* Month/Year Selector */}
+      <Card className="bg-white border-black/10">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-black flex items-center space-x-2">
+          <CardTitle className="flex items-center gap-2 text-black">
             <Calendar className="h-5 w-5" />
-            <span>Milestone Calendar</span>
+            Launch Calendar
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              {/* View Mode Toggle - Mobile responsive */}
-              {isMobile ? (
-                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'calendar' | 'condensed')} className="w-full">
-                  <ToggleGroupItem value="calendar" className="flex-1 data-[state=on]:bg-[#00ec97] data-[state=on]:text-black">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Calendar
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="condensed" className="flex-1 data-[state=on]:bg-[#00ec97] data-[state=on]:text-black">
-                    <List className="h-4 w-4 mr-2" />
-                    List
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    variant={viewMode === 'calendar' ? 'default' : 'outline'}
-                    onClick={() => setViewMode('calendar')}
-                    className="font-medium"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Calendar View
-                  </Button>
-                  <Button
-                    variant={viewMode === 'condensed' ? 'default' : 'outline'}
-                    onClick={() => setViewMode('condensed')}
-                    className="font-medium"
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    List View
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            {/* Filters - Mobile Responsive */}
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-black">Filters:</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="font-medium text-xs h-8 px-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  {!isMobile && <span className="ml-2">Refresh</span>}
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-                <Select value={projectFilter} onValueChange={setProjectFilter}>
-                  <SelectTrigger className="text-xs h-9">
-                    <SelectValue placeholder="Project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Projects</SelectItem>
-                    {availableProjects.map((project) => (
-                      <SelectItem key={project} value={project}>{project}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="text-xs h-9">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="delayed">Delayed</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={timeRangeFilter} onValueChange={setTimeRangeFilter}>
-                  <SelectTrigger className="text-xs h-9 col-span-2 lg:col-span-1">
-                    <SelectValue placeholder="Time Range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="this-month">This Month</SelectItem>
-                    <SelectItem value="next-month">Next Month</SelectItem>
-                    <SelectItem value="this-quarter">This Quarter</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center text-sm text-black/60 font-medium">
-                <span>{getFilteredMilestones().length} milestones</span>
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
+            >
+              {months.map((month, index) => (
+                <option key={index} value={index}>{month}</option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              className="px-3 py-2 border border-black/20 rounded-md bg-white text-sm font-medium focus:border-[#00ec97] focus:outline-none"
+            >
+              {[2024, 2025, 2026].map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
           </div>
-
-          {viewMode === 'calendar' ? (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <div className="bg-[#f2f1e9] rounded-lg p-4">
-                    <CalendarComponent
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        setSelectedDate(date);
-                        if (date) {
-                          const milestonesForDate = getMilestonesForDate(date);
-                          setSelectedMilestones(milestonesForDate);
-                        }
-                      }}
-                      className="rounded-md border-0"
-                      modifiers={{
-                        hasMilestone: (date) => getMilestonesForDate(date).length > 0
-                      }}
-                      modifiersStyles={{
-                        hasMilestone: {
-                          backgroundColor: '#00ec97',
-                          color: 'white',
-                          fontWeight: 'bold'
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-[#f2f1e9] rounded-lg p-4">
-                    <h3 className="font-semibold text-black mb-3">
-                      {selectedDate ? formatDate(selectedDate.toISOString()) : 'Select a date'}
-                    </h3>
-                    {selectedMilestones.length > 0 ? (
-                      <div className="space-y-3">
-                        {selectedMilestones.map((milestone, index) => (
-                          <div key={index} className="bg-white rounded-lg p-3 border border-black/10">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <Badge
-                                variant="outline"
-                                className={`${getStatusColor(milestone.status)} font-medium`}
-                              >
-                                {milestone.status}
-                              </Badge>
-                              <span className="text-xs text-black/60 font-medium">{milestone.projectName}</span>
-                            </div>
-                            <h4 className="font-medium text-black text-sm mb-1">{milestone.title}</h4>
-                            <p className="text-xs text-black/60">{milestone.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-black/60 font-medium">No milestones for this date</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                {getFilteredMilestones().length > 0 ? (
-                  getFilteredMilestones()
-                    .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime())
-                    .map((milestone, index) => (
-                      <div key={index} className="bg-[#f2f1e9] rounded-lg p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <div className="flex-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-black">{milestone.title}</h3>
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  variant="outline"
-                                  className={`${getStatusColor(milestone.status)} font-medium`}
-                                >
-                                  {milestone.status}
-                                </Badge>
-                                <Badge variant="outline" className="bg-white text-black border-black/20 font-medium">
-                                  {milestone.projectName}
-                                </Badge>
-                              </div>
-                            </div>
-                            <p className="text-sm text-black/70 mb-2">{milestone.description}</p>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-black/60">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4" />
-                                <span className="font-medium">Due: {milestone.dueDate ? formatDate(milestone.dueDate) : 'TBD'}</span>
-                                {milestone.dueDate && isPastDue(milestone.dueDate) && milestone.status !== 'completed' && (
-                                  <Badge variant="outline" className="bg-[#ff7966]/10 text-black border-[#ff7966]/30 font-medium">
-                                    Overdue
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium">Category: {milestone.projectCategory}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                ) : (
-                  <div className="bg-[#f2f1e9] rounded-lg p-8 text-center">
-                    <Calendar className="h-12 w-12 text-black/40 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-black mb-2">No Milestones Found</h3>
-                    <p className="text-black/60 font-medium">Try adjusting your filters to see more milestones.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          
+          <p className="text-sm text-black/60">
+            Viewing {months[selectedMonth]} {selectedYear} - {currentMonthProjects.length} launches
+          </p>
         </CardContent>
       </Card>
+
+      {/* Projects for Selected Month */}
+      {currentMonthProjects.length > 0 ? (
+        <div className="grid gap-4">
+          {currentMonthProjects.map((project) => {
+            const categories = Array.isArray(project.category) ? project.category : [project.category];
+            const launchDate = project.sale_date || project.launch_date;
+            
+            return (
+              <Card key={project.id} className="bg-white border-black/10 shadow-sm hover:shadow-md transition-all duration-200 hover:border-[#00ec97]/30">
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <Link 
+                          to={`/project/${project.id}`}
+                          className="font-semibold text-lg text-black hover:text-[#00ec97] transition-colors"
+                        >
+                          {project.name}
+                        </Link>
+                        {project.symbol && (
+                          <span className="text-sm text-black/60 font-medium">${project.symbol}</span>
+                        )}
+                        <Badge className={`font-medium text-xs ${getStatusColor(project.status)}`}>
+                          {project.status}
+                        </Badge>
+                        {project.type && (
+                          <Badge className={`font-medium text-xs ${getTypeColor(project.type)}`}>
+                            {project.type}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {project.description && (
+                        <p className="text-sm text-black/70 font-medium line-clamp-2 mb-2">
+                          {project.description}
+                        </p>
+                      )}
+
+                      <div className="flex flex-wrap gap-1">
+                        {categories.slice(0, 3).map((cat: string) => (
+                          <Badge key={cat} variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                            {cat}
+                          </Badge>
+                        ))}
+                        {categories.length > 3 && (
+                          <Badge variant="outline" className="text-xs bg-white border-black/20 text-black font-medium">
+                            +{categories.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-black mb-1">Launch Date</div>
+                      <div className="text-lg font-bold text-[#00ec97]">{launchDate}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="bg-white border-black/10">
+          <CardContent className="p-8 text-center">
+            <CalendarDays className="h-12 w-12 text-black/40 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-black mb-2">No launches in {months[selectedMonth]} {selectedYear}</h3>
+            <p className="text-black/60">Try selecting a different month or clearing your filters.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
