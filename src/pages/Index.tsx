@@ -58,20 +58,16 @@ const parseLaunchDate = (dateStr: string): Date => {
     // Convert quarters to months (Q1=Jan-Mar, Q2=Apr-Jun, Q3=Jul-Sep, Q4=Oct-Dec)
     const quarterStartMonth = (quarterNum - 1) * 3;
     
-    // For sorting: Early = start of quarter, Late = end of quarter
-    let month = quarterStartMonth;
-    let day = 1;
+    // For sorting: Early = start of quarter, no timing = middle, Late = end of quarter
+    let month = quarterStartMonth + 1; // Default to middle month of quarter
+    let day = 15; // Default to middle of month
     
-    if (timing?.toLowerCase() === 'late') {
-      month = quarterStartMonth + 2; // Last month of quarter
-      day = 28; // Near end of month
-    } else if (timing?.toLowerCase() === 'early') {
+    if (timing?.toLowerCase() === 'early') {
       month = quarterStartMonth; // First month of quarter
       day = 1;
-    } else {
-      // No timing specified, assume middle of quarter
-      month = quarterStartMonth + 1;
-      day = 15;
+    } else if (timing?.toLowerCase() === 'late') {
+      month = quarterStartMonth + 2; // Last month of quarter
+      day = 28; // Near end of month
     }
     
     return new Date(yearNum, month, day);
@@ -118,6 +114,9 @@ export default function Index() {
     setSelectedCategory('');
   };
 
+  // Check if any filters are applied
+  const hasFilters = searchQuery.trim() !== '' || selectedCategory !== '';
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -143,15 +142,25 @@ export default function Index() {
       <header className="bg-white border-b border-black/10 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
           <div className="flex items-center justify-between">
-            <Link to="/" className="hover:opacity-80 transition-opacity">
+            <Link to="/" className="hover:opacity-80 transition-opacity flex items-center space-x-2">
+              <img 
+                src="/lovable-uploads/953030c2-2096-4070-922b-c33c7fda1ce7.png" 
+                alt="NEAR Protocol Logo" 
+                className="h-6 w-6"
+              />
               <h1 className="text-lg font-semibold text-black">NEAR Tokens</h1>
             </Link>
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
-                <Link to="/blog" className="flex items-center space-x-2">
+                <a 
+                  href="https://nearlend.org/blog" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2"
+                >
                   <BookOpen className="h-4 w-4" />
                   <span className="hidden sm:inline">Blog</span>
-                </Link>
+                </a>
               </Button>
             </div>
           </div>
@@ -186,10 +195,12 @@ export default function Index() {
                 <SelectItem value="Infrastructure">Infrastructure</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={clearFilters}>
-              <span className="sm:hidden">Clear</span>
-              <span className="hidden sm:inline">Clear Filters</span>
-            </Button>
+            {hasFilters && (
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                <span className="sm:hidden">Clear</span>
+                <span className="hidden sm:inline">Clear Filters</span>
+              </Button>
+            )}
           </div>
         </div>
       </section>
