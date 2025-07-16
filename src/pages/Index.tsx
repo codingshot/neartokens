@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -210,7 +209,7 @@ export default function Index() {
       <section className="bg-white border-b border-black/10 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-3xl font-semibold text-black mb-3">
-            Track token launches on NEAR Protocol ecosystem
+            Track tokens launches on NEAR Protocol
           </h2>
           <p className="text-lg text-black/70 font-medium mb-4">
             Stay updated on upcoming and completed token sales, listings, and more.
