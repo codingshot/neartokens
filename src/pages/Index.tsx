@@ -17,12 +17,7 @@ import { Search, Filter, Calendar, BarChart3, Zap, TrendingUp, Users, DollarSign
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-interface BackerObject {
-  name: string;
-  logo?: string;
-  link?: string;
-}
-
+// Import the Project interface from ProjectCard to avoid duplicates
 interface Project {
   id: number | string;
   name: string;
