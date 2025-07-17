@@ -25,20 +25,8 @@ import {
 } from "@/components/ui/carousel";
 import { useEffect, useState } from 'react';
 import { calculateTokenStatistics } from '@/lib/utils';
-import { useSEO } from '@/hooks/useSEO';
 
 const Landing = () => {
-  // Apply SEO metadata for the landing page
-  const baseUrl = 'https://nearplays.com';
-  useSEO({
-    title: 'NEAR Tokens - Comprehensive Token Launch Tracker for NEAR Protocol',
-    description: 'The ultimate platform for tracking NEAR Protocol token launches. Monitor upcoming sales, listings, metrics, and launch schedules across all NEAR token projects. Built for Token Season 2025.',
-    keywords: 'NEAR Protocol, token launches, token tracker, blockchain analytics, Web3 platform, DeFi tracking, token sales, token listings, NEAR ecosystem, cryptocurrency tracking, blockchain development, token season 2025',
-    image: `${baseUrl}/tokenseason.webp`,
-    url: `${baseUrl}/landing`,
-    type: 'website'
-  });
-
   const [stats, setStats] = useState([
     { value: "0", label: "Token Projects", icon: Coins },
     { value: "0", label: "Token Sales", icon: CheckCircle },
