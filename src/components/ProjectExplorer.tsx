@@ -32,13 +32,33 @@ interface Project {
 
 interface ProjectExplorerProps {
   projects: Project[];
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  selectedCategory: string;
+  handleCategoryChange: (category: string) => void;
+  selectedStatus: string;
+  handleStatusChange: (status: string) => void;
+  selectedType: string;
+  handleTypeChange: (type: string) => void;
   viewMode?: 'cards' | 'list' | 'calendar';
   onCategoryClick?: (category: string) => void;
   sortBy?: 'name' | 'date' | 'status';
 }
 
-export const ProjectExplorer = ({ projects, viewMode = 'cards', onCategoryClick, sortBy = 'date' }: ProjectExplorerProps) => {
-  // Sort projects
+export const ProjectExplorer = ({ 
+  projects, 
+  searchTerm,
+  setSearchTerm,
+  selectedCategory,
+  handleCategoryChange,
+  selectedStatus,
+  handleStatusChange,
+  selectedType,
+  handleTypeChange,
+  viewMode = 'cards', 
+  onCategoryClick, 
+  sortBy = 'date' 
+}: ProjectExplorerProps) => {
   const sortedProjects = [...projects].sort((a, b) => {
     switch (sortBy) {
       case 'name':
