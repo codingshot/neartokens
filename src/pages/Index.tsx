@@ -1,6 +1,10 @@
+
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
+import { Header } from '@/components/Header';
+import { HeroSection } from '@/components/HeroSection';
+import { TokenFilters } from '@/components/TokenFilters';
 import { ProjectExplorer } from '@/components/ProjectExplorer';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Footer } from '@/components/Footer';
@@ -40,6 +44,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryFromUrl || 'all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'calendar'>('cards');
 
   // Apply SEO metadata for the main page
   const baseUrl = 'https://nearplays.com';
@@ -111,8 +116,16 @@ const Index = () => {
     setSelectedType(type);
   };
 
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+  };
+
   if (isLoading) {
-    return <LoadingSpinner centered />;
+    return (
+      <div className="min-h-screen bg-[#f2f1e9]">
+        <LoadingSpinner centered />
+      </div>
+    );
   }
 
   if (error) {
@@ -128,17 +141,44 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[#f2f1e9]">
-      <ProjectExplorer
-        projects={filteredProjects}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+      <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <HeroSection />
+      <TokenFilters
         selectedCategory={selectedCategory}
         handleCategoryChange={handleCategoryChange}
         selectedStatus={selectedStatus}
         handleStatusChange={handleStatusChange}
         selectedType={selectedType}
         handleTypeChange={handleTypeChange}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-black mb-2">
+            {filteredProjects.length} Token{filteredProjects.length !== 1 ? 's' : ''} Found
+          </h2>
+          <p className="text-black/60">
+            Showing {selectedCategory === 'all' ? 'all categories' : selectedCategory} • {selectedStatus === 'all' ? 'all statuses' : selectedStatus} • {selectedType === 'all' ? 'all types' : selectedType}
+          </p>
+        </div>
+
+        <ProjectExplorer
+          projects={filteredProjects}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          handleCategoryChange={handleCategoryChange}
+          selectedStatus={selectedStatus}
+          handleStatusChange={handleStatusChange}
+          selectedType={selectedType}
+          handleTypeChange={handleTypeChange}
+          viewMode={viewMode}
+          onCategoryClick={handleCategoryClick}
+        />
+      </main>
+      
       <Footer />
     </div>
   );
